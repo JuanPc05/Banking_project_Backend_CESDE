@@ -1,7 +1,7 @@
 package application.service.outputs;
 
 import application.domain.CheckingAccount;
-import application.outputsc.CheckingAccountService;
+import application.outputs.CheckingAccountService;
 import application.repositoryPort.CheckingAccountRepositoryPort;
 
 import java.util.List;
