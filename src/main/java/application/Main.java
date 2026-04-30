@@ -1,7 +1,7 @@
 package application;
 
 import application.config.AppConfig;
-import application.view.MainMenuView;
+import application.userinterface.MainMenuView;
 
 public class Main {
     public static void main(String[] args) {

@@ -4,8 +4,10 @@ import application.domain.CreditCard;
 import java.util.List;
 
 public interface CreditCardRepositoryPort {
-    void save(CreditCard card);
+    void saveCreditCard(CreditCard card);
     CreditCard findByCardNumber(String cardNumber);
     List<CreditCard> findAll();
-    void update(CreditCard card);
+    void updateCreditCard(CreditCard card);
+
+
 }

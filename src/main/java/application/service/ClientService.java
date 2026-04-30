@@ -1,27 +1,37 @@
 package application.service;
 
 import application.domain.Client;
+import application.domain.CreditCard;
 import application.service.outputs.IAuthenticable;
+import application.service.ports.CreditCardRepositoryPort;
 import application.service.ports.IClientRepository;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class ClientService implements IAuthenticable {
     private final IClientRepository clientRepository;
-    private Client currentClient; // Is used to track the logged user
+    private final CreditCardRepositoryPort creditCardRepositoryPort;
+    private Client currentClient;
+    private final Map<Integer, CreditCard> assignedCards = new HashMap<>();
 
-    public ClientService(IClientRepository clientRepository) {
+    public ClientService(IClientRepository clientRepository, CreditCardRepositoryPort creditCardRepositoryPort) {
         this.clientRepository = clientRepository;
+        this.creditCardRepositoryPort = creditCardRepositoryPort;
     }
 
+    // ---------------- Métodos originales (no tocados) ----------------
     @Override
     public boolean authenticate(String username, String password) {
         Client client = clientRepository.findByUserName(username)
-                .orElseThrow(() -> new IllegalArgumentException("User not found: "  + username));
+                .orElseThrow(() -> new IllegalArgumentException("User not found: " + username));
 
-        if(client.isBlocked()) {
+        if (client.isBlocked()) {
             throw new IllegalStateException("Account is blocked. Contact support.");
         }
 
-        if(client.getPassword().equals(password)) {
+        if (client.getPassword().equals(password)) {
             client.setFailedIntents(0);
             clientRepository.update(client);
             return true;
@@ -29,7 +39,7 @@ public class ClientService implements IAuthenticable {
             int intents = client.getFailedIntents() + 1;
             client.setFailedIntents(intents);
 
-            if(intents >= Client.MAX_USER_INTENTS) {
+            if (intents >= Client.MAX_USER_INTENTS) {
                 client.setBlocked(true);
             }
 
@@ -40,7 +50,7 @@ public class ClientService implements IAuthenticable {
 
     @Override
     public void logIn(String username, String password) {
-        if(!authenticate(username, password)) {
+        if (!authenticate(username, password)) {
             throw new IllegalArgumentException("Invalid credentials.");
         }
 
@@ -52,7 +62,7 @@ public class ClientService implements IAuthenticable {
 
     @Override
     public void logOut() {
-        if(currentClient == null) {
+        if (currentClient == null) {
             throw new IllegalStateException("No user is currently logged in.");
         }
         currentClient.setAuthenticated(false);
@@ -60,24 +70,42 @@ public class ClientService implements IAuthenticable {
         this.currentClient = null;
     }
 
-    @Override
-    public void changePassword(String oldPassword, String newPassword) {
-        if (currentClient == null) {
-            throw new IllegalStateException("Must be logged in to change password.");
-        }
-        if (!currentClient.getPassword().equals(oldPassword)){
-            throw new IllegalArgumentException("Old password is incorrect.");
-        }
-        if (newPassword == null || newPassword.length() < 3) {
-            throw new IllegalArgumentException("New password must be at least 3 characters long.");
+    // ---------------- Métodos nuevos (añadidos) ----------------
+
+    // Asignar tarjeta a un cliente
+    public void assignCardToClient(int clientId, String cardNumber) {
+        Client client = clientRepository.findById(clientId)
+                .orElseThrow(() -> new IllegalArgumentException("Cliente no encontrado"));
+
+        CreditCard card = creditCardRepositoryPort.findByCardNumber(cardNumber);
+        if (card == null) {
+            throw new IllegalArgumentException("Tarjeta no encontrada");
         }
 
-        currentClient.setPassword(newPassword);
-        clientRepository.update(currentClient);
-
+        assignedCards.put(clientId, card);
     }
 
-    public Client getCurrentClient() {
-        return currentClient;
+    // Obtener las tarjetas asignadas
+    public Map<Integer, CreditCard> getAssignedCards() {
+        return assignedCards;
+    }
+
+    // Listar todas las tarjetas disponibles en el repositorio
+    public List<CreditCard> getAvailableCards() {
+        return creditCardRepositoryPort.findAll();
+    }
+
+    // Implementación del método faltante de IAuthenticable
+    @Override
+    public void changePassword(String username, String newPassword) {
+        Client client = clientRepository.findByUserName(username)
+                .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado: " + username));
+
+        if (!client.isAuthenticated()) {
+            throw new IllegalStateException("El cliente debe estar autenticado para cambiar la contraseña.");
+        }
+
+        client.setPassword(newPassword);
+        clientRepository.update(client);
     }
 }

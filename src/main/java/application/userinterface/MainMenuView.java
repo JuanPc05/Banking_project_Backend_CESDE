@@ -1,22 +1,26 @@
-package application.view;
+package application.userinterface;
 
+import application.service.CreditCardServiceImpl;
 import application.service.outputs.CheckingAccountService;
 import application.service.outputs.SavingsAccountService;
-import application.service.outputs.CreditCardService;
+import application.service.ClientService;
 import application.util.FormValidationUtil;
+import application.view.CheckingAccountView;
+import application.view.SavingsAccountView;
 
 public class MainMenuView {
     private final CheckingAccountView checkingAccountView;
     private final SavingsAccountView savingsAccountView;
-    private final CreditCardView creditCardView;
+    private final MenuCreditCard menuCreditCard;
 
     public MainMenuView(CheckingAccountService checkingService,
                         SavingsAccountService savingsService,
-                        CreditCardService creditCardService) {
+                        CreditCardServiceImpl creditCardService, ClientService clientService) {
         this.checkingAccountView = new CheckingAccountView(checkingService);
         this.savingsAccountView = new SavingsAccountView(savingsService);
-        this.creditCardView = new CreditCardView(creditCardService);
+        this.menuCreditCard = new MenuCreditCard( clientService);
     }
+
 
     public void showMenu() {
         int option;
@@ -32,9 +36,9 @@ public class MainMenuView {
             switch (option) {
                 case 1 -> checkingAccountView.showMenu();
                 case 2 -> savingsAccountView.showMenu();
-                case 3 -> creditCardView.showMenu();
+                case 3 -> menuCreditCard.showMenu(); //
                 case 0 -> System.out.println("Gracias por usar el sistema bancario CESDE. ¡Hasta pronto!");
-                default -> System.out.println("Opción inválida.");
+                default -> System.out.println("⚠️ Opción inválida.");
             }
         } while (option != 0);
     }

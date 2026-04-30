@@ -115,7 +115,7 @@ public class CheckingAccountView {
         }
     }
 
-    // Método auxiliar para mostrar detalles bonitos de una cuenta
+
     private void printAccountDetails(CheckingAccount account) {
         System.out.println("\n======================================");
         System.out.println("   📑 DETALLES DE LA CUENTA CORRIENTE ");
