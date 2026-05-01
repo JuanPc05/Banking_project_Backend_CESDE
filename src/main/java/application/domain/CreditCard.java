@@ -4,10 +4,10 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 
 public class CreditCard extends Account {
-    private double quota;                // Cupo asignado por el banco
-    private double debt;                 // Deuda acumulada
-    private int numberOfInstallments;    // Número de cuotas de la última compra
-    private double creditLimit;          // Límite máximo de crédito
+    private double quota;
+    private double debt;
+    private int numberOfInstallments;
+    private double creditLimit;
 
     public CreditCard(String accountNumber, double quota, double creditLimit) {
         super(accountNumber, 0.0, LocalDate.now(), "ACTIVE", "CREDIT_CARD", new ArrayList<>());

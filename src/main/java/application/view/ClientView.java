@@ -2,7 +2,7 @@ package application.view;
 
 import application.util.FormValidationUtil;
 
-public class GuestView {
+public class ClientView {
 
     public void showMenu() {
             System.out.println("\n--- REGISTRO DE CLIENTE ---");
