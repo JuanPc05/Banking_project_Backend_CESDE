@@ -2,6 +2,7 @@ package application.domain;
 
 import application.domain.enums.TransactionType;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 public class Transaction {
     private int id;
@@ -29,7 +30,13 @@ public class Transaction {
 
     @Override
     public String toString() {
-        return String.format("[%s] %-12s | Monto: $%.2f | Saldo: $%.2f | %s",
-                timestamp, transactionType, amount, balanceAfterTransaction, description);
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+
+        return String.format("[%s] %-12s | Monto: $%,.2f | Saldo: $%,.2f | %s",
+                timestamp.format(formatter),
+                transactionType,
+                amount,
+                balanceAfterTransaction,
+                description);
     }
 }

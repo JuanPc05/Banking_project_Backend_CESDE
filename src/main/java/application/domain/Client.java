@@ -1,6 +1,7 @@
 package application.domain;
 
-public class Client {
+public class
+Client {
     public static final int MAX_USER_INTENTS = 3;
 
     protected int id;
