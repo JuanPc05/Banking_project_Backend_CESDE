@@ -29,9 +29,24 @@ public class CreditCard extends Account {
     public double getCreditLimit() { return creditLimit; }
     public void setCreditLimit(double creditLimit) { this.creditLimit = creditLimit; }
 
+    public void addTransaction(Transaction transaction) {
+        transactions.add(transaction);
+    }
+
+
     @Override
     public String toString() {
-        return String.format("Tarjeta %s | Cupo: $%.2f | Límite: $%.2f | Deuda: $%.2f | Cuotas: %d | Estado: %s",
-                accountNumber, quota, creditLimit, debt, numberOfInstallments, accountState);
+
+        return String.format("Tarjeta %s |" +
+                        " Cupo: $%.2f |" +
+                        " Límite: $%.2f |" +
+                        " Deuda: $%.2f |" +
+                        " Cuotas: %d | " +
+                        "Estado: %s",
+                accountNumber,
+                quota, creditLimit,
+                debt,
+                numberOfInstallments,
+                accountState);
     }
 }
