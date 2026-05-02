@@ -12,14 +12,14 @@ import application.view.SavingsAccountView;
 public class MainMenuView {
     private final CheckingAccountView checkingAccountView;
     private final SavingsAccountView savingsAccountView;
-    private final MenuCreditCard menuCreditCard;
+    /*private final MenuCreditCard menuCreditCard;*/
 
     public MainMenuView(CheckingAccountService checkingService,
                         SavingsAccountService savingsService,
                         CreditCardServiceImpl creditCardService, ClientServiceImpl clientService) {
         this.checkingAccountView = new CheckingAccountView(checkingService);
         this.savingsAccountView = new SavingsAccountView(savingsService);
-        this.menuCreditCard = new MenuCreditCard(clientService);
+        /*this.menuCreditCard = new MenuCreditCard(clientService);*/
     }
 
 
@@ -37,7 +37,8 @@ public class MainMenuView {
             switch (option) {
                 case 1 -> checkingAccountView.showMenu();
                 case 2 -> savingsAccountView.showMenu();
-                case 3 -> menuCreditCard.showMenu(); //
+                case 3 -> System.out.println("Nada");
+                /*menuCreditCard.showMenu(); *///
                 case 0 -> System.out.println("Gracias por usar el sistema bancario CESDE. ¡Hasta pronto!");
                 default -> System.out.println("⚠️ Opción inválida.");
             }

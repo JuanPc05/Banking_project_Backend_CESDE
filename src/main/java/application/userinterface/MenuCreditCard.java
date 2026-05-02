@@ -1,6 +1,6 @@
 package application.userinterface;
 
-import application.service.ClientService;
+
 import application.domain.CreditCard;
 import application.service.ClientServiceImpl;
 import application.util.FormValidationUtil;
@@ -8,9 +8,10 @@ import application.util.FormValidationUtil;
 import java.util.Map;
 
 public class MenuCreditCard {
-    private final ClientService clientService;
+    /*private final ClientService clientService;
 
     public MenuCreditCard(ClientServiceImpl clientService) {
+
         this.clientService = clientService;
     }
 
@@ -68,5 +69,6 @@ public class MenuCreditCard {
             assigned.forEach((clientId, card) ->
                     System.out.println("Cliente ID: " + clientId + " -> Tarjeta: " + card.getAccountNumber()));
         }
-    }
+    }*/
+    
 }

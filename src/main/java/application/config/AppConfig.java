@@ -49,7 +49,7 @@ public class AppConfig {
                 clientService // Si MainMenuView necesita auth, lo recibe como IAuthenticable
         );
 
-        // 4. RETORNAMOS EL MENÚ DE ENTRADA (Home)
+
         return new HomeMenu(clientView, mainMenuView);
     }
 }
