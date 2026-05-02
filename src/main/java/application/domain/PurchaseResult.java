@@ -25,4 +25,19 @@ public class PurchaseResult {
     public double getMonthlyInstallment() { return monthlyInstallment; }
     public double getTotalWithInterest() { return totalWithInterest; }
     public double getNewDebt() { return newDebt; }
+
+
+    @Override
+    public String toString() {
+        return "✅ Compra realizada" +
+                "\nMonto: $" + amount +
+                "\nCuotas: " + installments +
+                "\nTasa aplicada: " + (rate * 100) + "%" +
+                "\nCuota mensual: $" + monthlyInstallment +
+                "\nTotal con intereses: $" + totalWithInterest +
+                "\nNueva deuda acumulada: $" + newDebt;
+    }
+
 }
+
+

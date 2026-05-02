@@ -1,44 +1,81 @@
 package application.view;
 
+import application.domain.SavingsAccount;
 import application.service.outputs.SavingsAccountService;
 import application.util.FormValidationUtil;
 
 public class SavingsAccountView {
+    private final SavingsAccountService savingsAccountService;
 
-    private final SavingsAccountService service;
-
-    public SavingsAccountView(SavingsAccountService service) {
-        this.service = service;
+    public SavingsAccountView(SavingsAccountService savingsAccountService) {
+        this.savingsAccountService = savingsAccountService;
     }
 
-
-    public void showMenu() {
-        int option;
-        do {
-            System.out.println("\n--- MENÚ CUENTA DE AHORROS ---");
-            System.out.println("1. Retirar dinero");
-            System.out.println("2. Aplicar intereses");
-            System.out.println("0. Salir");
-
-            option = FormValidationUtil.validateInt("Seleccione una opción: ");
-
-            switch (option) {
-                case 1 -> withdraw();
-                case 2 -> applyInterest();
-                case 0 -> System.out.println("Saliendo...");
-                default -> System.out.println("Opción inválida.");
-            }
-        } while (option != 0);
+    public void createAccount() {
+        String accountNumber = FormValidationUtil.validateString("Ingrese número de cuenta: ");
+        double initialBalance = FormValidationUtil.validateDouble("Ingrese saldo inicial: ");
+        try {
+            SavingsAccount newAccount = savingsAccountService.createAccount(accountNumber, initialBalance);
+            System.out.println("✅ Cuenta creada correctamente con número: " + newAccount.getAccountNumber());
+        } catch (IllegalArgumentException e) {
+            System.out.println("⚠️ " + e.getMessage());
+        }
     }
 
-    private void withdraw() {
+    public void deposit() {
+        String accountNumber = FormValidationUtil.validateString("Ingrese número de cuenta: ");
+        double amount = FormValidationUtil.validateDouble("Ingrese monto a depositar: ");
+        try {
+            savingsAccountService.deposit(accountNumber, amount);
+            System.out.println("✅ Depósito realizado correctamente.");
+        } catch (IllegalArgumentException e) {
+            System.out.println("⚠️ " + e.getMessage());
+        }
+    }
+
+    public void withdraw() {
         String accountNumber = FormValidationUtil.validateString("Ingrese número de cuenta: ");
         double amount = FormValidationUtil.validateDouble("Ingrese monto a retirar: ");
-        service.withdraw(accountNumber, amount);
+        try {
+            savingsAccountService.withdraw(accountNumber, amount);
+            System.out.println("✅ Retiro realizado correctamente.");
+        } catch (IllegalArgumentException e) {
+            System.out.println("⚠️ " + e.getMessage());
+        }
     }
 
-    private void applyInterest() {
+    public void applyInterest() {
         String accountNumber = FormValidationUtil.validateString("Ingrese número de cuenta: ");
-        service.applyInterest(accountNumber);
+        try {
+            savingsAccountService.applyInterest(accountNumber);
+            System.out.println("✅ Intereses aplicados correctamente.");
+        } catch (IllegalArgumentException e) {
+            System.out.println("⚠️ " + e.getMessage());
+        }
+    }
+
+    public void showBalance() {
+        String accountNumber = FormValidationUtil.validateString("Ingrese número de cuenta: ");
+        try {
+            SavingsAccount account = savingsAccountService.getAccount(accountNumber);
+            System.out.println("💰 Saldo actual: $" + account.getBalance());
+        } catch (IllegalArgumentException e) {
+            System.out.println("⚠️ " + e.getMessage());
+        }
+    }
+
+    public void showTransactions() {
+        String accountNumber = FormValidationUtil.validateString("Ingrese número de cuenta: ");
+        try {
+            SavingsAccount account = savingsAccountService.getAccount(accountNumber);
+            if (account.getTransactions().isEmpty()) {
+                System.out.println("📄 No hay movimientos registrados.");
+            } else {
+                System.out.println("📄 Movimientos de la cuenta " + accountNumber + ":");
+                account.getTransactions().forEach(System.out::println);
+            }
+        } catch (IllegalArgumentException e) {
+            System.out.println("⚠️ " + e.getMessage());
+        }
     }
 }

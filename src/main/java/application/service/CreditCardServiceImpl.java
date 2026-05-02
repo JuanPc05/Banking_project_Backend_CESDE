@@ -1,6 +1,8 @@
 package application.service;
 
 import application.domain.CreditCard;
+import application.domain.Transaction;
+import application.domain.enums.TransactionType;
 import application.service.outputs.CreditCardService;
 import application.domain.PurchaseResult;
 import application.service.ports.CreditCardRepositoryPort;
@@ -8,10 +10,10 @@ import application.service.ports.CreditCardRepositoryPort;
 import java.util.List;
 
 public class CreditCardServiceImpl implements CreditCardService {
-    private final CreditCardRepositoryPort  creditCardRepositoryPort;
+    private final CreditCardRepositoryPort creditCardRepositoryPort;
 
     public CreditCardServiceImpl(CreditCardRepositoryPort creditCardRepository) {
-        this. creditCardRepositoryPort = creditCardRepository;
+        this.creditCardRepositoryPort = creditCardRepository;
     }
 
     @Override
@@ -21,17 +23,17 @@ public class CreditCardServiceImpl implements CreditCardService {
 
     @Override
     public CreditCard getCard(String cardNumber) {
-        return  creditCardRepositoryPort.findByCardNumber(cardNumber);
+        return creditCardRepositoryPort.findByCardNumber(cardNumber);
     }
 
     @Override
     public List<CreditCard> getAllCards() {
-        return  creditCardRepositoryPort.findAll();
+        return creditCardRepositoryPort.findAll();
     }
 
     @Override
     public PurchaseResult purchaseCreditCard(String cardNumber, double amount, int installments) {
-        CreditCard card =  creditCardRepositoryPort.findByCardNumber(cardNumber);
+        CreditCard card = creditCardRepositoryPort.findByCardNumber(cardNumber);
         if (card == null) {
             throw new IllegalArgumentException("Tarjeta no encontrada.");
         }
@@ -51,6 +53,30 @@ public class CreditCardServiceImpl implements CreditCardService {
         return new PurchaseResult(amount, installments, rate, cuota, totalConInteres, card.getDebt());
     }
 
+    private double getRateByInstallments(int installments) {
+        if (installments <= 1) {
+            return 0.0;
+        } else if (installments <= 3) {
+            return 0.02;
+        } else if (installments <= 6) {
+            return 0.03;
+        } else if (installments <= 12) {
+            return 0.04;
+        } else {
+            return 0.05;
+        }
+    }
+
+    private double calculateMonthlyInstallment(double amount, double monthlyRate, int installments) {
+        if (monthlyRate == 0) {
+            return amount / installments;
+        }
+        double numerator = amount * monthlyRate;
+        double denominator = 1 - Math.pow(1 + monthlyRate, -installments);
+        return numerator / denominator;
+    }
+
+
     @Override
     public void pay(String cardNumber, double amount) {
         CreditCard card = creditCardRepositoryPort.findByCardNumber(cardNumber);
@@ -58,26 +84,32 @@ public class CreditCardServiceImpl implements CreditCardService {
             throw new IllegalArgumentException("Tarjeta no encontrada.");
         }
 
-        if (amount > card.getDebt()) {
-            throw new IllegalArgumentException("El pago excede la deuda actual.");
+        if (amount <= 0) {
+            throw new IllegalArgumentException("El monto a pagar debe ser mayor que cero.");
         }
 
+        if (amount > card.getDebt()) {
+            throw new IllegalArgumentException("El monto excede la deuda actual.");
+        }
+
+        // Reducir la deuda
         card.setDebt(card.getDebt() - amount);
+
+        // Si la deuda queda en cero, reiniciamos cuotas
+        if (card.getDebt() == 0) {
+            card.setNumberOfInstallments(0);
+        }
+
         creditCardRepositoryPort.updateCreditCard(card);
+
+        System.out.println("✅ Pago realizado correctamente. Deuda actual: $" + card.getDebt());
     }
 
-    // 🔹 Método auxiliar: tasa según número de cuotas
-    private double getRateByInstallments(int installments) {
-        if (installments <= 2) return 0.0;       // sin interés
-        if (installments <= 6) return 0.019;     // 1.9% mensual
-        return 0.023;                            // 2.3% mensual
-    }
 
-    // 🔹 Método auxiliar: cálculo de cuota mensual con fórmula de amortización
-    private double calculateMonthlyInstallment(double capital, double rate, int n) {
-        if (rate == 0) return capital / n; // sin interés
-        double divisor = 1 - Math.pow(1 + rate, -n);
-        return (capital * rate) / divisor;
-    }
+
+
+
+
 }
+
 

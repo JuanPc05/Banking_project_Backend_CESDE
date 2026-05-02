@@ -1,11 +1,9 @@
 package application.view;
 
-import application.service.outputs.CreditCardService;
 import application.domain.CreditCard;
 import application.domain.PurchaseResult;
+import application.service.outputs.CreditCardService;
 import application.util.FormValidationUtil;
-
-import java.util.List;
 
 public class CreditCardView {
     private final CreditCardService creditCardService;
@@ -14,76 +12,78 @@ public class CreditCardView {
         this.creditCardService = creditCardService;
     }
 
+    public void createCard() {
+        String cardNumber = FormValidationUtil.validateString("Ingrese número de tarjeta: ");
+        double quota = FormValidationUtil.validateDouble("Ingrese cupo de crédito: ");
+        double creditLimit = FormValidationUtil.validateDouble("Ingrese límite máximo de crédito: ");
 
-    private void createCard() {
-        String number = FormValidationUtil.validateString("Ingrese número de tarjeta: ");
-        double quota = FormValidationUtil.validateDouble("Ingrese cupo disponible: ");
-        double limit = FormValidationUtil.validateDouble("Ingrese límite de crédito: ");
+        CreditCard newCard = new CreditCard(cardNumber, quota, creditLimit);
+        creditCardService.createCreditCard(newCard);
 
-        CreditCard card = new CreditCard(number, quota, limit);
-        creditCardService.createCreditCard(card);
-
-        System.out.println("✅ Tarjeta creada exitosamente.");
+        System.out.println("\n✅ Tarjeta creada exitosamente: " + cardNumber);
     }
 
-    private void getCard() {
-        String number = FormValidationUtil.validateString("Ingrese número de tarjeta: ");
-        CreditCard card = creditCardService.getCard(number);
-
+    public void getCard() {
+        String cardNumber = FormValidationUtil.validateString("Ingrese número de tarjeta: ");
+        CreditCard card = creditCardService.getCard(cardNumber);
         if (card != null) {
-            printCardDetails(card);
+            System.out.println("Número: " + card.getAccountNumber() +
+                    " | Cupo: " + card.getQuota() +
+                    " | Límite: " + card.getCreditLimit() +
+                    " | Deuda: " + card.getDebt());
         } else {
             System.out.println("⚠️ Tarjeta no encontrada.");
         }
     }
 
-    private void listCards() {
-        List<CreditCard> cards = creditCardService.getAllCards();
-        System.out.println("\nTarjetas disponibles:");
-        for (CreditCard card : cards) {
-            printCardDetails(card);
+    public void getAllCards() {
+        var cards = creditCardService.getAllCards();
+        if (cards.isEmpty()) {
+            System.out.println("⚠️ No hay tarjetas registradas.");
+        } else {
+            cards.forEach(card ->
+                    System.out.println("Número: " + card.getAccountNumber() +
+                            " | Cupo: " + card.getQuota() +
+                            " | Límite: " + card.getCreditLimit() +
+                            " | Deuda: " + card.getDebt()));
         }
     }
 
-    private void purchase() {
-        String number = FormValidationUtil.validateString("Ingrese número de tarjeta: ");
+    public void purchase() {
+        String cardNumber = FormValidationUtil.validateString("Ingrese número de tarjeta: ");
         double amount = FormValidationUtil.validateDouble("Ingrese monto de la compra: ");
         int installments = FormValidationUtil.validateInt("Ingrese número de cuotas: ");
 
         try {
-            PurchaseResult result = creditCardService.purchaseCreditCard(number, amount, installments);
-
-            System.out.println("\n💳 Compra realizada con tarjeta " + number);
-            System.out.printf("Monto: $%.2f | Cuotas: %d%n", result.getAmount(), result.getInstallments());
-            System.out.printf("Tasa aplicada: %.2f%%%n", result.getRate() * 100);
-            System.out.printf("Cuota mensual: $%.2f%n", result.getMonthlyInstallment());
-            System.out.printf("Total a pagar con intereses: $%.2f%n", result.getTotalWithInterest());
-            System.out.printf("Nueva deuda acumulada (capital): $%.2f%n", result.getNewDebt());
+            PurchaseResult result = creditCardService.purchaseCreditCard(cardNumber, amount, installments);
+            System.out.println(result);
         } catch (IllegalArgumentException e) {
             System.out.println("⚠️ " + e.getMessage());
         }
     }
 
-    private void pay() {
-        String number = FormValidationUtil.validateString("Ingrese número de tarjeta: ");
-        double amount = FormValidationUtil.validateDouble("Ingrese monto del pago: ");
-
+    public void makePurchase() {
+        String cardNumber = FormValidationUtil.validateString("Ingrese número de tarjeta: ");
+        double amount = FormValidationUtil.validateDouble("Ingrese monto de la compra: ");
+        int installments = FormValidationUtil.validateInt("Ingrese número de cuotas: ");
         try {
-            creditCardService.pay(number, amount);
-            System.out.println("✅ Pago realizado exitosamente.");
+            PurchaseResult result = creditCardService.purchaseCreditCard(cardNumber, amount, installments);
+
+            System.out.println("✅ Compra realizada con tarjeta " + cardNumber);
+            System.out.println("Monto: $" + result.getAmount());
+            System.out.println("Cuotas: " + result.getInstallments());
+            System.out.println("Tasa aplicada: " + (result.getRate() * 100) + "%");
+
+
+            System.out.printf("Cuota mensual: $%.0f%n", result.getMonthlyInstallment());
+            System.out.printf("Total con intereses: $%.0f%n", result.getTotalWithInterest());
+
+            System.out.println("Nueva deuda acumulada: $" + result.getNewDebt());
+
+
         } catch (IllegalArgumentException e) {
             System.out.println("⚠️ " + e.getMessage());
         }
     }
 
-    private void printCardDetails(CreditCard card) {
-        System.out.println("\n--------------------------------------");
-        System.out.println("Número de tarjeta   : " + card.getAccountNumber());
-        System.out.println("Cupo disponible     : " + card.getQuota());
-        System.out.println("Límite de crédito   : " + card.getCreditLimit());
-        System.out.println("Deuda actual        : " + card.getDebt());
-        System.out.println("Cuotas últimas compra: " + card.getNumberOfInstallments());
-        System.out.println("Estado              : " + card.getAccountState());
-        System.out.println("--------------------------------------");
-    }
 }
