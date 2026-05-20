@@ -1,11 +1,11 @@
-package bank.application.service;
+package bank.application;
 
 import bank.domain.SavingsAccount;
 import bank.domain.Transaction;
 import bank.domain.enums.AccountState;
 import bank.domain.enums.TransactionType;
-import bank.application.service.inputs.SavingsAccountService;
-import bank.application.service.ports.SavingsAccountRepositoryPort;
+import bank.application.inputs.SavingsAccountService;
+import bank.application.ports.SavingsAccountRepositoryPort;
 
 import java.time.LocalDate;
 import java.util.ArrayList;

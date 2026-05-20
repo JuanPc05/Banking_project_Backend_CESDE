@@ -1,7 +1,7 @@
 package bank.userinterface;
 
-import bank.application.service.inputs.CheckingAccountService;
-import bank.application.service.CreditCardServiceImpl;
+import bank.application.inputs.CheckingAccountService;
+import bank.application.CreditCardServiceImpl;
 import bank.infrastructure.util.FormValidationUtil;
 import bank.infrastructure.in.view.adapter.CheckingAccountView;
 import bank.infrastructure.in.view.adapter.CreditCardView;

@@ -1,7 +1,7 @@
 package bank.infrastructure.out.adapter;
 
 import bank.domain.Transaction;
-import bank.application.service.ports.TransactionRepositoryPort;
+import bank.application.ports.TransactionRepositoryPort;
 
 import java.util.ArrayList;
 import java.util.HashMap;

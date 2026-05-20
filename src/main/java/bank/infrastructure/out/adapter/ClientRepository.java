@@ -1,7 +1,7 @@
 package bank.infrastructure.out.adapter;
 
 import bank.domain.Client;
-import bank.application.service.ports.IClientRepository;
+import bank.application.ports.IClientRepository;
 
 import java.util.*;
 

@@ -1,4 +1,4 @@
-package bank.application.service.inputs;
+package bank.application.inputs;
 
 public interface TransactionService {
     // El caso de uso principal: transferir dinero de una cuenta a otra

@@ -1,9 +1,9 @@
-package bank.application.service;
+package bank.application;
 
 import bank.domain.Client;
-import bank.application.service.inputs.IAuthenticable;
-import bank.application.service.inputs.IClientManagement;
-import bank.application.service.ports.IClientRepository;
+import bank.application.inputs.IAuthenticable;
+import bank.application.inputs.IClientManagement;
+import bank.application.ports.IClientRepository;
 
 public class ClientServiceImpl implements IAuthenticable, IClientManagement {
     private final IClientRepository clientRepository;

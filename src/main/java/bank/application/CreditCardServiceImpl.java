@@ -1,9 +1,9 @@
-package bank.application.service;
+package bank.application;
 
 import bank.domain.CreditCard;
-import bank.application.service.inputs.CreditCardService;
+import bank.application.inputs.CreditCardService;
 import bank.domain.PurchaseResult;
-import bank.application.service.ports.CreditCardRepositoryPort;
+import bank.application.ports.CreditCardRepositoryPort;
 
 import java.util.List;
 

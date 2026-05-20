@@ -1,8 +1,8 @@
 package bank.infrastructure.in.view.adapter;
 
 import bank.domain.Client;
-import bank.application.service.inputs.IAuthenticable;
-import bank.application.service.inputs.IClientManagement;
+import bank.application.inputs.IAuthenticable;
+import bank.application.inputs.IClientManagement;
 import bank.infrastructure.util.FormValidationUtil;
 
 public class ClientView {

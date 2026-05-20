@@ -1,4 +1,4 @@
-package bank.application.service.ports;
+package bank.application.ports;
 
 import bank.domain.SavingsAccount;
 

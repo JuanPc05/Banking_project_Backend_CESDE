@@ -1,4 +1,4 @@
-package bank.application.service.inputs;
+package bank.application.inputs;
 
 import bank.domain.CreditCard;
 import bank.domain.PurchaseResult;
