@@ -1,10 +1,10 @@
-package bank.application.service;
+package bank.application;
 
 import bank.domain.CheckingAccount;
 import bank.domain.Transaction;
 import bank.domain.enums.TransactionType;
-import bank.application.service.inputs.CheckingAccountService;
-import bank.application.service.ports.CheckingAccountRepositoryPort;
+import bank.application.inputs.CheckingAccountService;
+import bank.application.ports.CheckingAccountRepositoryPort;
 
 import java.util.List;
 

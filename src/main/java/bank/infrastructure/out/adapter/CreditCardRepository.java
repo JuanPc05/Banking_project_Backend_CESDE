@@ -1,7 +1,7 @@
 package bank.infrastructure.out.adapter;
 
 import bank.domain.CreditCard;
-import bank.application.service.ports.CreditCardRepositoryPort;
+import bank.application.ports.CreditCardRepositoryPort;
 
 import java.util.ArrayList;
 import java.util.Arrays;

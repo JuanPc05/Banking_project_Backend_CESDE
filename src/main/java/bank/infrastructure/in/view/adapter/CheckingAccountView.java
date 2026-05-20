@@ -1,7 +1,7 @@
 package bank.infrastructure.in.view.adapter;
 
 import bank.domain.CheckingAccount;
-import bank.application.service.inputs.CheckingAccountService;
+import bank.application.inputs.CheckingAccountService;
 import bank.infrastructure.util.FormValidationUtil;
 
 public class CheckingAccountView {

@@ -1,7 +1,7 @@
 package bank.infrastructure.out.adapter;
 
 import bank.domain.SavingsAccount;
-import bank.application.service.ports.SavingsAccountRepositoryPort;
+import bank.application.ports.SavingsAccountRepositoryPort;
 
 import java.util.HashMap;
 import java.util.List;

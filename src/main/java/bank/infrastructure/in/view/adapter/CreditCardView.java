@@ -2,7 +2,7 @@ package bank.infrastructure.in.view.adapter;
 
 import bank.domain.CreditCard;
 import bank.domain.PurchaseResult;
-import bank.application.service.inputs.CreditCardService;
+import bank.application.inputs.CreditCardService;
 import bank.infrastructure.util.FormValidationUtil;
 
 public class CreditCardView {
