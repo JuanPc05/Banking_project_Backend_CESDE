@@ -14,6 +14,8 @@ Client {
     protected boolean isAuthenticated;
     protected boolean isBlocked;
 
+    public Client() {}
+
     public Client(int id, String identification, String fullName, String cellPhone, String userName, String password, int failedIntents, boolean isBlocked) {
         this.id = id;
         this.identification = identification;

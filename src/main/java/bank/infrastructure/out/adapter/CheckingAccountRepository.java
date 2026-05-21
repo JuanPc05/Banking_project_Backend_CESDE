@@ -11,11 +11,13 @@ public class CheckingAccountRepository implements CheckingAccountRepositoryPort 
 
     @Override
     public CheckingAccount findByAccountNumber(String accountNumber) {
+
         return database.get(accountNumber);
     }
 
     @Override
     public void update(CheckingAccount account) {
+
         database.put(account.getAccountNumber(), account);
     }
 
