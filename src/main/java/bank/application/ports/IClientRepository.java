@@ -9,6 +9,7 @@ public interface IClientRepository {
     Optional<Client> findByUserName(String UserName);
     Optional<Client> findById(int id);
     List<Client> findAll();
-    void save(Client client);
-    void update(Client client);
+    Client save(Client client);
+    Client update(Client client);
+    void deleteClient(int id);
 }
