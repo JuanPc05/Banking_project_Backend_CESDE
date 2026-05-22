@@ -1,14 +1,14 @@
 package bank.userinterface;
 
+import bank.domain.Client;
 import bank.infrastructure.util.FormValidationUtil;
 import bank.infrastructure.in.view.adapter.ClientView;
 
 public class HomeMenu {
 
     private final ClientView clientView;
-    private final MainMenuView mainMenuView; // Agregamos la dependencia del menú interno
+    private final MainMenuView mainMenuView;
 
-    // Actualizamos el constructor
     public HomeMenu(ClientView clientView, MainMenuView mainMenuView) {
         this.clientView = clientView;
         this.mainMenuView = mainMenuView;
@@ -30,12 +30,17 @@ public class HomeMenu {
 
             switch (option) {
                 case 1:
-                    // Llamamos al formulario y capturamos si fue exitoso
-                    boolean loginSuccess = clientView.handleLogin();
+                    // 1. Cambiamos el retorno de boolean a Client.
+                    // Si el login falla, handleLogin() debería devolver null.
+                    Client loggedInClient = clientView.handleLogin();
 
-                    if (loginSuccess) {
-                        // ¡AQUÍ ESTÁ LA MAGIA! Si se loguea bien, lanzamos el menú principal
-                        mainMenuView.showMenu();
+                    // 2. Si el cliente no es nulo, el login fue exitoso
+                    if (loggedInClient != null) {
+                        // 3. Le pasamos el cliente al menú principal como acordamos antes
+                        mainMenuView.showMenu(loggedInClient);
+
+                        // Cuando el usuario presione 0 en mainMenuView, el código volverá aquí
+                        // y el bucle while mostrará el menú de Home otra vez.
                     }
                     break;
                 case 2:
