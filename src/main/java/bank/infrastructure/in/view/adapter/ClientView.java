@@ -7,42 +7,42 @@ import bank.infrastructure.util.FormValidationUtil;
 
 public class ClientView {
 
-    // Dependemos de abstracciones, no de implementaciones
     private final IAuthenticable authService;
     private final IClientManagement clientManagement;
 
-    // Pedimos ambos contratos
     public ClientView(IAuthenticable authService, IClientManagement clientManagement) {
         this.authService = authService;
         this.clientManagement = clientManagement;
     }
 
     // --- FORMULARIO OPCIÓN 1: INICIAR SESIÓN ---
-    // Retorna true si el login fue exitoso, false si falló.
-    // Esto le sirve al HomeMenu para saber si debe mostrar el siguiente menú.
-    public boolean handleLogin() {
+    // AHORA RETORNA: El objeto Client si fue exitoso, o null si falló.
+    public Client handleLogin() {
         System.out.println("\n--- INICIO DE SESIÓN ---");
 
         String username = FormValidationUtil.validateString("Ingrese su usuario: ");
         String password = FormValidationUtil.validateString("Ingrese su contraseña: ");
 
         try {
-            // El servicio lanza una excepción si falla (ej. cuenta bloqueada, clave incorrecta)
-            authService.logIn(username, password);
+            // El servicio ahora retorna el cliente recién validado
+            Client loggedInClient = authService.logIn(username, password);
 
-            // Si llegamos a esta línea, es porque no hubo errores en logIn()
+            // Usamos ese mismo objeto para saludarlo
             System.out.println("¡Inicio de sesión exitoso! Bienvenido de nuevo, "
-                    + authService.getCurrentClient().getFullName());
-            return true;
+                    + loggedInClient.getFullName());
+
+            // Retornamos el cliente al HomeMenu
+            return loggedInClient;
 
         } catch (IllegalArgumentException | IllegalStateException e) {
-            // Atrapamos el error exacto y se lo mostramos al usuario de forma amigable
             System.out.println("Error de acceso: " + e.getMessage());
-            return false;
+            // Si hay error, devolvemos null para que el HomeMenu sepa que falló
+            return null;
         }
     }
 
     // --- FORMULARIO OPCIÓN 2: CREAR USUARIO ---
+    // (Este queda exactamente igual)
     public void handleRegister() {
         System.out.println("\n--- FORMULARIO DE REGISTRO DE CLIENTE ---");
 
@@ -52,7 +52,6 @@ public class ClientView {
         String userName = FormValidationUtil.validateString("Cree un nombre de usuario: ");
         String password = FormValidationUtil.validateString("Cree una contraseña (mínimo 6 caracteres): ");
 
-        // El ID '0' indica que es un usuario nuevo para que el repositorio le asigne uno
         Client newClient = new Client(0, identification, fullName, cellPhone, userName, password, 0, false);
 
         try {

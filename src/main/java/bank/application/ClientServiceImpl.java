@@ -6,63 +6,41 @@ import bank.application.inputs.IClientManagement;
 import bank.application.ports.IClientRepository;
 
 public class ClientServiceImpl implements IAuthenticable, IClientManagement {
+
     private final IClientRepository clientRepository;
-    private Client currentClient; // Is used to track the logged user
+
+    // ELIMINAMOS 'private Client currentClient;' - El servicio ya no guarda estado
 
     public ClientServiceImpl(IClientRepository clientRepository) {
-
         this.clientRepository = clientRepository;
     }
 
     @Override
     public void registerClient(Client newClient) {
-
-        // 1. Validaciones de nulidad y texto vacío (Fail-fast)
+        // (Tus validaciones están perfectas, las dejamos igual)
         if (newClient.getFullName() == null || newClient.getFullName().trim().isEmpty()) {
             throw new IllegalArgumentException("El nombre completo es obligatorio.");
         }
         if (newClient.getUserName() == null || newClient.getUserName().trim().isEmpty()) {
             throw new IllegalArgumentException("El nombre de usuario es obligatorio.");
         }
-
-        // 2. Validaciones de seguridad y formato
         if (newClient.getPassword() == null || newClient.getPassword().length() < 6) {
             throw new IllegalArgumentException("Por seguridad, la contraseña debe tener al menos 6 caracteres.");
         }
-
-        // Usamos una expresión regular ("\\d+") para validar que la identificación contenga SOLO números
         if (newClient.getIdentification() == null || !newClient.getIdentification().matches("\\d+")) {
             throw new IllegalArgumentException("La identificación (cédula) debe contener únicamente números.");
         }
-
         if (newClient.getCellPhone() == null || !newClient.getCellPhone().matches("\\d+")) {
             throw new IllegalArgumentException("El número de celular debe contener únicamente números.");
         }
-
-        // 3. Validaciones de reglas de negocio en la Base de Datos (Unicidad)
-        // Verificamos si el 'userName' ya existe para evitar duplicados
         if (clientRepository.findByUserName(newClient.getUserName()).isPresent()) {
-            throw new IllegalStateException("El nombre de usuario '" + newClient.getUserName() + "' ya está en uso. Por favor elija otro.");
+            throw new IllegalStateException("El nombre de usuario ya está en uso.");
         }
 
-        /*
-         Nota: Si en tu IClientRepository tienes un método para buscar por cédula,
-         también deberías validar esto para evitar que una persona se registre dos veces:
-
-         if (clientRepository.findByIdentification(newClient.getIdentification()).isPresent()) {
-             throw new IllegalStateException("Ya existe un cliente registrado con esta identificación.");
-         }
-        */
-
-        // 4. Blindaje de estados iniciales (Defensive Programming)
-        // Aunque el constructor lo hace, el Servicio se asegura de que nadie
-        // haya inyectado un cliente que ya venga autenticado o bloqueado por error.
         newClient.setFailedIntents(0);
         newClient.setBlocked(false);
         newClient.setAuthenticated(false);
 
-        // 5. Persistencia (Guardar en la base de datos simulada)
-        // Asumiendo que tu repositorio tiene un método save()
         clientRepository.save(newClient);
     }
 
@@ -86,52 +64,47 @@ public class ClientServiceImpl implements IAuthenticable, IClientManagement {
             if(intents >= Client.MAX_USER_INTENTS) {
                 client.setBlocked(true);
             }
-
             clientRepository.update(client);
             return false;
         }
     }
 
+    // MODIFICADO: Ahora retorna el Client en lugar de guardarlo internamente
     @Override
-    public void logIn(String username, String password) {
+    public Client logIn(String username, String password) {
         if(!authenticate(username, password)) {
             throw new IllegalArgumentException("Invalid credentials.");
         }
 
+        // Ya sabemos que existe porque authenticate pasó
         Client client = clientRepository.findByUserName(username).get();
         client.setAuthenticated(true);
-        clientRepository.update(client);
-        this.currentClient = client;
+
+        // NO llamamos a clientRepository.update() aquí.
+        return client; // Retornamos el cliente para que el Controlador (Adapter) maneje la sesión
     }
 
-    @Override
-    public void logOut() {
-        if(currentClient == null) {
-            throw new IllegalStateException("No user is currently logged in.");
-        }
-        currentClient.setAuthenticated(false);
-        clientRepository.update(currentClient);
-        this.currentClient = null;
-    }
+    // ELIMINADO: El método logOut() ya no tiene sentido en el servicio.
+    // Cerrar sesión es ahora responsabilidad exclusiva del Adaptador (ej. borrar la cookie/token)
+    // Puedes borrar este método de la interfaz IAuthenticable.
 
+    // MODIFICADO: Ahora debe recibir el username o id de quien quiere cambiar la clave
     @Override
-    public void changePassword(String oldPassword, String newPassword) {
-        if (currentClient == null) {
-            throw new IllegalStateException("Must be logged in to change password.");
-        }
-        if (!currentClient.getPassword().equals(oldPassword)){
+    public void changePassword(String username, String oldPassword, String newPassword) {
+
+        Client client = clientRepository.findByUserName(username)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+
+        if (!client.getPassword().equals(oldPassword)){
             throw new IllegalArgumentException("Old password is incorrect.");
         }
         if (newPassword == null || newPassword.length() < 3) {
             throw new IllegalArgumentException("New password must be at least 3 characters long.");
         }
 
-        currentClient.setPassword(newPassword);
-        clientRepository.update(currentClient);
+        client.setPassword(newPassword);
 
-    }
-
-    public Client getCurrentClient() {
-        return currentClient;
+        // Aquí SÍ hacemos update porque el password es un dato que persiste en base de datos
+        clientRepository.update(client);
     }
 }

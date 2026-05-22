@@ -5,7 +5,7 @@ import bank.application.ports.IClientRepository;
 
 import java.util.*;
 
-public class ClientRepository implements IClientRepository {
+public class ClientRepository  {
 
     private final Map<Integer, Client> clients = new HashMap<>();
 
@@ -29,24 +29,24 @@ public class ClientRepository implements IClientRepository {
     }
     // ---------------------------------------------------------
 
-    @Override
+
     public Optional<Client> findByUserName(String userName) {
         return clients.values().stream()
                 .filter(c -> c.getUserName().equals(userName))
                 .findFirst();
     }
 
-    @Override
+
     public Optional<Client> findById(int id) {
         return Optional.ofNullable(clients.get(id));
     }
 
-    @Override
+
     public List<Client> findAll() {
         return new ArrayList<>(clients.values());
     }
 
-    @Override
+
     public void save(Client client) {
         // Auto-generar ID si viene en 0
         if (client.getId() <= 0) {
@@ -60,7 +60,7 @@ public class ClientRepository implements IClientRepository {
         clients.put(client.getId(), client);
     }
 
-    @Override
+
     public void update(Client client) {
         if (!clients.containsKey(client.getId())) {
             throw new IllegalArgumentException("Error al actualizar: El cliente con ID " + client.getId() + " no existe.");

@@ -14,6 +14,7 @@ public class ClientRepositoryDb implements IClientRepository {
     private final Connection connection;
     private final RowMapper<Client> clientRowMapper;
 
+
     public ClientRepositoryDb(Connection connection, RowMapper<Client> clientRowMapper) {
         this.connection = connection;
         this.clientRowMapper = clientRowMapper;
