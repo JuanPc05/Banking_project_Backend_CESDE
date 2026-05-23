@@ -1,7 +1,11 @@
 package bank.domain;
 
+import bank.domain.enums.AccountState;
+
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.List;
 
 public class CreditCard extends Account {
     private double quota;
@@ -9,30 +13,57 @@ public class CreditCard extends Account {
     private int numberOfInstallments;
     private double creditLimit;
 
-    public CreditCard(String accountNumber, double quota, double creditLimit) {
-        super(accountNumber, 0.0, LocalDate.now(), "ACTIVE", "CREDIT_CARD", new ArrayList<>());
+    public CreditCard(String accountNumber, BigDecimal balance, String accountType, double quota, double debt, int numberOfInstallments, double creditLimit) {
+        super(accountNumber, balance, accountType);
         this.quota = quota;
-        this.debt = 0.0;
-        this.numberOfInstallments = 0;
+        this.debt = debt;
+        this.numberOfInstallments = numberOfInstallments;
         this.creditLimit = creditLimit;
     }
 
-    public double getQuota() { return quota; }
-    public void setQuota(double quota) { this.quota = quota; }
-
-    public double getDebt() { return debt; }
-    public void setDebt(double debt) { this.debt = debt; }
-
-    public int getNumberOfInstallments() { return numberOfInstallments; }
-    public void setNumberOfInstallments(int numberOfInstallments) { this.numberOfInstallments = numberOfInstallments; }
-
-    public double getCreditLimit() { return creditLimit; }
-    public void setCreditLimit(double creditLimit) { this.creditLimit = creditLimit; }
-
-    public void addTransaction(Transaction transaction) {
-        transactions.add(transaction);
+    public CreditCard(String accountNumber, BigDecimal balance, LocalDate dateOpened, AccountState accountState, String accountType, List<Transaction> transactions, double quota, double debt, int numberOfInstallments, double creditLimit) {
+        super(accountNumber, balance, dateOpened, accountState, accountType, transactions);
+        this.quota = quota;
+        this.debt = debt;
+        this.numberOfInstallments = numberOfInstallments;
+        this.creditLimit = creditLimit;
     }
 
+    public CreditCard() {
+        super();
+    }
+
+    public double getQuota() {
+        return quota;
+    }
+
+    public void setQuota(double quota) {
+        this.quota = quota;
+    }
+
+    public double getDebt() {
+        return debt;
+    }
+
+    public void setDebt(double debt) {
+        this.debt = debt;
+    }
+
+    public int getNumberOfInstallments() {
+        return numberOfInstallments;
+    }
+
+    public void setNumberOfInstallments(int numberOfInstallments) {
+        this.numberOfInstallments = numberOfInstallments;
+    }
+
+    public double getCreditLimit() {
+        return creditLimit;
+    }
+
+    public void setCreditLimit(double creditLimit) {
+        this.creditLimit = creditLimit;
+    }
 
     @Override
     public String toString() {

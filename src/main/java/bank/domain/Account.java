@@ -2,22 +2,38 @@ package bank.domain;
 
 import bank.domain.enums.AccountState;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 public abstract class Account {
     protected String accountNumber;
-    protected double balance;
+    protected BigDecimal balance;
     protected LocalDate dateOpened;
     protected AccountState accountState;
     protected String accountType;
     protected List<Transaction> transactions;
 
-    public Account(String accountNumber, double balance, LocalDate dateOpened, String stateAccount, String accountType, List<Transaction> transactions) {
+    // CONSTRUCTOR 1: Para cuentas NUEVAS (Lógica de negocio)
+    // No pide fecha ni estado ni transacciones, porque el sistema los define por defecto.
+    public Account(String accountNumber, BigDecimal balance, String accountType) {
         this.accountNumber = accountNumber;
         this.balance = balance;
-        this.dateOpened = LocalDate.now();
-        this.accountState = AccountState.ACTIVE;
+        this.dateOpened = LocalDate.now(); // Fecha actual garantizada
+        this.accountState = AccountState.ACTIVE; // Estado inicial garantizado
+        this.accountType = accountType;
+        this.transactions = new ArrayList<>(); // Lista vacía lista para usar
+    }
+
+    // CONSTRUCTOR 2: Para cuentas EXISTENTES (Base de Datos / Mapper)
+    // Recibe absolutamente todos los parámetros y los respeta tal cual vienen.
+    public Account(String accountNumber, BigDecimal balance, LocalDate dateOpened,
+                   AccountState accountState, String accountType, List<Transaction> transactions) {
+        this.accountNumber = accountNumber;
+        this.balance = balance;
+        this.dateOpened = dateOpened; // Respeta la fecha original
+        this.accountState = accountState; // Respeta si estaba bloqueada o activa
         this.accountType = accountType;
         this.transactions = transactions;
     }
@@ -34,11 +50,11 @@ public abstract class Account {
         this.accountNumber = accountNumber;
     }
 
-    public double getBalance() {
+    public BigDecimal getBalance() {
         return balance;
     }
 
-    public void setBalance(double balance) {
+    public void setBalance(BigDecimal balance) {
         this.balance = balance;
     }
 
