@@ -1,14 +1,26 @@
 package bank.domain;
 
+import bank.domain.enums.AccountState;
+
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
 public class SavingsAccount extends Account {
     private double interestRate;
 
-    public SavingsAccount(String accountNumber, double balance, LocalDate dateOpened, String stateAccount, String accountType, List<Transaction> transactions, double interestRate) {
-        super(accountNumber, balance, dateOpened, stateAccount, accountType, transactions);
+    public SavingsAccount(String accountNumber, BigDecimal balance, String accountType, double interestRate) {
+        super(accountNumber, balance, accountType);
         this.interestRate = interestRate;
+    }
+
+    public SavingsAccount(String accountNumber, BigDecimal balance, LocalDate dateOpened, AccountState accountState, String accountType, List<Transaction> transactions, double interestRate) {
+        super(accountNumber, balance, dateOpened, accountState, accountType, transactions);
+        this.interestRate = interestRate;
+    }
+
+    public SavingsAccount() {
+        super();
     }
 
     public double getInterestRate() {
