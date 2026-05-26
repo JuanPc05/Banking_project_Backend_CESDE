@@ -4,6 +4,8 @@ import bank.domain.SavingsAccount;
 import bank.application.inputs.SavingsAccountService;
 import bank.infrastructure.util.FormValidationUtil;
 
+import java.math.BigDecimal;
+
 public class SavingsAccountView {
     private final SavingsAccountService savingsAccountService;
 
@@ -13,9 +15,10 @@ public class SavingsAccountView {
 
     public void createAccount() {
         String accountNumber = FormValidationUtil.validateString("Ingrese número de cuenta: ");
+        int clientId = FormValidationUtil.validateInt("Ingrese el ID del cliente: ");
         double initialBalance = FormValidationUtil.validateDouble("Ingrese saldo inicial: ");
         try {
-            SavingsAccount newAccount = savingsAccountService.createAccount(accountNumber, initialBalance);
+            SavingsAccount newAccount = savingsAccountService.createAccount(accountNumber, BigDecimal.valueOf(initialBalance),clientId );
             System.out.println("✅ Cuenta creada correctamente con número: " + newAccount.getAccountNumber());
         } catch (IllegalArgumentException e) {
             System.out.println("⚠️ " + e.getMessage());

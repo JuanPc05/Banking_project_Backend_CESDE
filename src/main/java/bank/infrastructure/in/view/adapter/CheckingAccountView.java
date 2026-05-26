@@ -4,6 +4,8 @@ import bank.domain.CheckingAccount;
 import bank.application.inputs.CheckingAccountService;
 import bank.infrastructure.util.FormValidationUtil;
 
+import java.math.BigDecimal;
+
 public class CheckingAccountView {
     private final CheckingAccountService checkingAccountService;
 
@@ -42,14 +44,28 @@ public class CheckingAccountView {
 
     private void createAccount() {
         String accountNumber = FormValidationUtil.validateString("Ingrese número de cuenta: ");
-        double initialBalance = FormValidationUtil.validateDouble("Ingrese saldo inicial: ");
-        double overdraftLimit = FormValidationUtil.validateDouble("Ingrese límite de sobregiro: ");
-        double overdraftPercentage = FormValidationUtil.validateDouble("Ingrese porcentaje de sobregiro: ");
+        int clientId = FormValidationUtil.validateInt("Ingrese ID del cliente dueño: ");
 
-        CheckingAccount newAccount = new CheckingAccount(accountNumber, initialBalance, overdraftLimit, overdraftPercentage);
+        // Para dinero: usamos BigDecimal
+        BigDecimal balance = FormValidationUtil.validateBigDecimal("Ingrese saldo inicial: ");
+        BigDecimal overdraftLimit = FormValidationUtil.validateBigDecimal("Ingrese límite de sobregiro: ");
+
+        // Para el porcentaje: usamos double (porque es una tasa, no dinero)
+       double overdraftPercentage = FormValidationUtil.validateDouble("Ingrese porcentaje de sobregiro: ");
+
+        // Ahora la llamada al constructor coincidirá perfectamente
+        CheckingAccount newAccount = new CheckingAccount(
+                accountNumber,
+                balance,
+                "cuenta corriente",
+                clientId,
+                overdraftPercentage,
+                overdraftLimit
+        );
+
         checkingAccountService.createAccount(newAccount);
 
-        System.out.println("\n✅ Cuenta creada exitosamente: " + accountNumber);
+        System.out.println("\n✅ Cuenta creada exitosamente.");
     }
 
     private void getAccount() {

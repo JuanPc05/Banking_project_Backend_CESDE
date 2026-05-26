@@ -8,12 +8,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class CreditCard extends Account {
-    private double quota;
+    private BigDecimal quota;
     private double debt;
     private int numberOfInstallments;
     private double creditLimit;
 
-    public CreditCard(String accountNumber, BigDecimal balance, String accountType, double quota, double debt, int numberOfInstallments, double creditLimit) {
+    public CreditCard(String accountNumber, BigDecimal balance, String accountType, BigDecimal quota, double debt, int numberOfInstallments, double creditLimit) {
         super(accountNumber, balance, accountType);
         this.quota = quota;
         this.debt = debt;
@@ -21,7 +21,7 @@ public class CreditCard extends Account {
         this.creditLimit = creditLimit;
     }
 
-    public CreditCard(String accountNumber, BigDecimal balance, LocalDate dateOpened, AccountState accountState, String accountType, List<Transaction> transactions, double quota, double debt, int numberOfInstallments, double creditLimit) {
+    public CreditCard(String accountNumber, BigDecimal balance, LocalDate dateOpened, AccountState accountState, String accountType, List<Transaction> transactions, BigDecimal quota, double debt, int numberOfInstallments, double creditLimit) {
         super(accountNumber, balance, dateOpened, accountState, accountType, transactions);
         this.quota = quota;
         this.debt = debt;
@@ -29,15 +29,27 @@ public class CreditCard extends Account {
         this.creditLimit = creditLimit;
     }
 
+
+    public CreditCard(String accountNumber, BigDecimal quota, BigDecimal creditLimit) {
+
+        super(accountNumber, BigDecimal.ZERO, "Tarjeta de Crédito");
+
+        this.quota = quota;
+
+        this.creditLimit = creditLimit.doubleValue();
+        this.debt = 0.0; // La deuda inicializa en 0
+        this.numberOfInstallments = 0;
+    }
+
     public CreditCard() {
         super();
     }
 
-    public double getQuota() {
+    public BigDecimal getQuota() {
         return quota;
     }
 
-    public void setQuota(double quota) {
+    public void setQuota(BigDecimal quota) {
         this.quota = quota;
     }
 

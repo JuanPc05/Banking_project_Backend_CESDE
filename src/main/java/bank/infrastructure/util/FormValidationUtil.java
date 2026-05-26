@@ -1,5 +1,6 @@
 package bank.infrastructure.util;
 
+import java.math.BigDecimal;
 import java.util.InputMismatchException;
 import java.util.Scanner;
 
@@ -75,6 +76,18 @@ public class FormValidationUtil {
                 return value;
             }
             System.out.println("Entrada no válida. El texto no puede estar vacío. Intente de nuevo.");
+        }
+    }
+
+    public static BigDecimal validateBigDecimal(String prompt) {
+        while (true) {
+            try {
+                System.out.println(prompt);
+                String input = sc.nextLine();
+                return new BigDecimal(input); // Convierte directamente el texto a BigDecimal
+            } catch (NumberFormatException e) {
+                System.out.println("Entrada no válida. Por favor, ingrese un número (ej: 1500.50).");
+            }
         }
     }
 }

@@ -4,14 +4,14 @@ import bank.domain.CheckingAccount;
 import bank.domain.Transaction;
 import bank.domain.enums.TransactionType;
 import bank.application.inputs.CheckingAccountService;
-import bank.application.ports.CheckingAccountRepositoryPort;
-
+import bank.application.ports.CheckingAccountRepository;
+import java.math.BigDecimal;
 import java.util.List;
 
 public class CheckingAccountServiceImpl implements CheckingAccountService {
-    private final CheckingAccountRepositoryPort repository;
+    private final CheckingAccountRepository repository;
 
-    public CheckingAccountServiceImpl(CheckingAccountRepositoryPort repository) {
+    public CheckingAccountServiceImpl(CheckingAccountRepository repository) {
         this.repository = repository;
     }
 
@@ -34,39 +34,43 @@ public class CheckingAccountServiceImpl implements CheckingAccountService {
     public void deposit(String accountNumber, double amount) {
         CheckingAccount account = repository.findByAccountNumber(accountNumber);
         if (account != null) {
-            account.setBalance(account.getBalance() + amount);
+            BigDecimal amountBd = BigDecimal.valueOf(amount);
+            account.setBalance(account.getBalance().add(amountBd));
+
+            // Registro de transacción
             account.getTransactions().add(new Transaction(
                     account.getTransactions().size() + 1,
                     TransactionType.DEPOSIT,
-                    amount,
+                    amountBd,
                     account.getBalance(),
                     "Depósito realizado"
             ));
             repository.update(account);
-            System.out.println("\n✅ Depósito realizado con éxito");
-            System.out.printf("Nuevo saldo de la cuenta %s: $%.2f%n", accountNumber, account.getBalance());
-        } else {
-            System.out.println("⚠️ La cuenta no existe.");
+            System.out.println("\n✅ Depósito exitoso. Nuevo saldo: $" + account.getBalance());
         }
     }
 
     @Override
     public void withdraw(String accountNumber, double amount) {
         CheckingAccount account = repository.findByAccountNumber(accountNumber);
-        if (account != null && account.getBalance() >= amount) {
-            account.setBalance(account.getBalance() - amount);
+        BigDecimal amountBd = BigDecimal.valueOf(amount);
+
+        // Lógica de Sobregiro: Saldo + Límite de sobregiro
+        BigDecimal availableFunds = account.getBalance().add(account.getOverdraftLimit());
+
+        if (account != null && availableFunds.compareTo(amountBd) >= 0) {
+            account.setBalance(account.getBalance().subtract(amountBd));
             account.getTransactions().add(new Transaction(
                     account.getTransactions().size() + 1,
                     TransactionType.WITHDRAWAL,
-                    amount,
+                    amountBd,
                     account.getBalance(),
                     "Retiro realizado"
             ));
             repository.update(account);
-            System.out.println("\n✅ Retiro realizado con éxito");
-            System.out.printf("Nuevo saldo de la cuenta %s: $%.2f%n", accountNumber, account.getBalance());
+            System.out.println("\n✅ Retiro exitoso. Nuevo saldo: $" + account.getBalance());
         } else {
-            System.out.println("⚠️ Fondos insuficientes o cuenta inexistente.");
+            System.out.println("⚠️ Fondos insuficientes (incluso con sobregiro).");
         }
     }
 
@@ -75,43 +79,32 @@ public class CheckingAccountServiceImpl implements CheckingAccountService {
         CheckingAccount origin = repository.findByAccountNumber(fromAccount);
         CheckingAccount destination = repository.findByAccountNumber(toAccount);
 
-        if (origin == null) {
-            System.out.println("⚠️ La cuenta origen no existe.");
-            return;
+        if (origin != null && destination != null) {
+            BigDecimal amountBd = BigDecimal.valueOf(amount);
+            BigDecimal availableFunds = origin.getBalance().add(origin.getOverdraftLimit());
+
+            if (availableFunds.compareTo(amountBd) >= 0) {
+                // 1. Descontar y sumar
+                origin.setBalance(origin.getBalance().subtract(amountBd));
+                destination.setBalance(destination.getBalance().add(amountBd));
+
+                // 2. Registrar transacciones
+                origin.getTransactions().add(new Transaction(
+                        origin.getTransactions().size() + 1, TransactionType.TRANSFER_OUT,
+                        amountBd, origin.getBalance(), "Transferencia a " + toAccount));
+
+                destination.getTransactions().add(new Transaction(
+                        destination.getTransactions().size() + 1, TransactionType.TRANSFER_IN,
+                        amountBd, destination.getBalance(), "Transferencia de " + fromAccount));
+
+                // 3. Persistir ambos cambios
+                repository.update(origin);
+                repository.update(destination);
+
+                System.out.println("\n💸 Transferencia exitosa.");
+            } else {
+                System.out.println("⚠️ Fondos insuficientes para transferir.");
+            }
         }
-        if (destination == null) {
-            System.out.println("⚠️ La cuenta destino no existe.");
-            return;
-        }
-        if (origin.getBalance() < amount) {
-            System.out.println("⚠️ Fondos insuficientes en la cuenta origen.");
-            return;
-        }
-
-        origin.setBalance(origin.getBalance() - amount);
-        destination.setBalance(destination.getBalance() + amount);
-
-        origin.getTransactions().add(new Transaction(
-                origin.getTransactions().size() + 1,
-                TransactionType.TRANSFER_IN,
-                amount,
-                origin.getBalance(),
-                "Transferencia a cuenta " + toAccount
-        ));
-
-        destination.getTransactions().add(new Transaction(
-                destination.getTransactions().size() + 1,
-                TransactionType.DEPOSIT,
-                amount,
-                destination.getBalance(),
-                "Transferencia recibida de cuenta " + fromAccount
-        ));
-
-        repository.update(origin);
-        repository.update(destination);
-
-        System.out.println("\n💸 Transferencia realizada con éxito");
-        System.out.printf("Saldo cuenta origen (%s): $%.2f%n", fromAccount, origin.getBalance());
-        System.out.printf("Saldo cuenta destino (%s): $%.2f%n", toAccount, destination.getBalance());
     }
 }

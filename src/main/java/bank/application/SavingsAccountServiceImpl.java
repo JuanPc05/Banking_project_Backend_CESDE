@@ -7,6 +7,7 @@ import bank.domain.enums.TransactionType;
 import bank.application.inputs.SavingsAccountService;
 import bank.application.ports.SavingsAccountRepositoryPort;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Optional;
@@ -19,16 +20,28 @@ public class SavingsAccountServiceImpl implements SavingsAccountService {
     }
 
     // En SavingsAccountServiceImpl
+
     @Override
-    public SavingsAccount createAccount(String accountNumber, double initialBalance) {
+    public SavingsAccount createAccount(String accountNumber, BigDecimal initialBalance, int clientId) {
         Optional<SavingsAccount> existing = repository.findById(accountNumber);
         if (existing.isPresent()) {
             throw new IllegalArgumentException("La cuenta " + accountNumber + " ya existe.");
         }
 
-        SavingsAccount newAccount = new SavingsAccount(accountNumber, initialBalance, LocalDate.now(),"ACTIVE","SAVINGS",new ArrayList<>(),0.02);
+        // Aquí ya tienes tus 8 parámetros (String, BigDecimal, LocalDate, Enum, String, List, double, int)
+        SavingsAccount newAccount = new SavingsAccount(
+                accountNumber,
+                initialBalance,
+                LocalDate.now(),
+                AccountState.ACTIVE,
+                "SAVINGS",
+                new ArrayList<>(),
+                0.02,
+                clientId
+        );
+
         repository.save(newAccount);
-        System.out.println("✅ Cuenta de ahorros creada con número: " + accountNumber);
+        System.out.println("✅ Cuenta de ahorros creada con éxito.");
         return newAccount;
     }
 
@@ -54,13 +67,15 @@ public class SavingsAccountServiceImpl implements SavingsAccountService {
             return;
         }
 
-        double newBalance = account.getBalance() + amount;
+        BigDecimal amountBd = BigDecimal.valueOf(amount);
+        BigDecimal newBalance = account.getBalance().add(amountBd);
         account.setBalance(newBalance);
 
         Transaction depositRecord = new Transaction(
                 account.getTransactions().size() + 1,
                 TransactionType.DEPOSIT,
-                amount,
+                amountBd,
+
                 newBalance,
                 "Depósito en cuenta de ahorros desde el servicio"
         );
@@ -90,19 +105,20 @@ public class SavingsAccountServiceImpl implements SavingsAccountService {
             System.out.println("Error: El monto a retirar debe ser mayor a cero.");
             return;
         }
+        BigDecimal amountBd = BigDecimal.valueOf(amount);
 
-        if (account.getBalance() < amount) {
+        if (account.getBalance().compareTo(amountBd) < 0) {
             System.out.println("Error: Saldo insuficiente. Tu saldo es: $" + account.getBalance());
             return;
         }
 
-        double newBalance = account.getBalance() - amount;
+        BigDecimal newBalance = account.getBalance().subtract(amountBd);
         account.setBalance(newBalance);
 
         Transaction withdrawalRecord = new Transaction(
                 account.getTransactions().size() + 1,
                 TransactionType.WITHDRAWAL,
-                amount,
+                amountBd,
                 newBalance,
                 "Retiro en cuenta de ahorros desde el servicio"
         );
@@ -128,9 +144,9 @@ public class SavingsAccountServiceImpl implements SavingsAccountService {
             return;
         }
 
-        double interestAmount = account.getBalance() * (account.getInterestRate() / 100);
-        double newBalance = account.getBalance() + interestAmount;
-        account.setBalance(newBalance);
+        BigDecimal interestRate = BigDecimal.valueOf(account.getInterestRate() / 100.0);
+        BigDecimal interestAmount = account.getBalance().multiply(interestRate);
+        BigDecimal newBalance = account.getBalance().add(interestAmount);
 
         Transaction interestRecord = new Transaction(
                 account.getTransactions().size() + 1,

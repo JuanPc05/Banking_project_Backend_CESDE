@@ -1,6 +1,8 @@
 package bank.domain;
 
 import bank.domain.enums.TransactionType;
+
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
@@ -8,11 +10,11 @@ public class Transaction {
     private int id;
     private LocalDateTime timestamp;
     private TransactionType transactionType;
-    private double amount;
-    private double balanceAfterTransaction;
+    private BigDecimal amount;
+    private BigDecimal balanceAfterTransaction;
     private String description;
 
-    public Transaction(int id, TransactionType transactionType, double amount, double balanceAfterTransaction, String description) {
+    public Transaction(int id, TransactionType transactionType, BigDecimal amount, BigDecimal balanceAfterTransaction, String description) {
         this.id = id;
         this.timestamp = LocalDateTime.now();
         this.transactionType = transactionType;
@@ -24,8 +26,8 @@ public class Transaction {
     public int getId() { return id; }
     public LocalDateTime getTimestamp() { return timestamp; }
     public TransactionType getTransactionType() { return transactionType; }
-    public double getAmount() { return amount; }
-    public double getBalanceAfterTransaction() { return balanceAfterTransaction; }
+    public BigDecimal getAmount() { return amount; }
+    public BigDecimal getBalanceAfterTransaction() { return balanceAfterTransaction; }
     public String getDescription() { return description; }
 
     @Override
