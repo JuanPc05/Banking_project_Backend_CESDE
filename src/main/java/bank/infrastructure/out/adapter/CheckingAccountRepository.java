@@ -1,12 +1,11 @@
 package bank.infrastructure.out.adapter;
 
 import bank.domain.CheckingAccount;
-import bank.application.ports.CheckingAccountRepositoryPort;
 
 import java.util.HashMap;
 import java.util.Map;
 
-public class CheckingAccountRepository implements CheckingAccountRepositoryPort {
+public class CheckingAccountRepository implements bank.application.ports.CheckingAccountRepository {
     private final Map<String, CheckingAccount> database = new HashMap<>();
 
     @Override

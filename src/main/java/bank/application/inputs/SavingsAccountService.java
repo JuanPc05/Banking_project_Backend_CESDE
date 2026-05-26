@@ -2,11 +2,16 @@ package bank.application.inputs;
 
 import bank.domain.SavingsAccount;
 
+import java.math.BigDecimal;
+
 public interface SavingsAccountService {
     void withdraw(String accountNumber, double amount);
     void applyInterest(String accountNumber);
     void deposit(String accountNumber, double amount);
     SavingsAccount getAccount(String accountNumber);
-    SavingsAccount createAccount(String accountNumber, double initialBalance);
 
+    // Esta es la firma que debe coincidir con tu clase:
+    SavingsAccount createAccount(String accountNumber, BigDecimal initialBalance, int clientId);
 }
+
+

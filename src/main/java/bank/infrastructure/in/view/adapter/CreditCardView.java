@@ -16,8 +16,10 @@ public class CreditCardView {
         String cardNumber = FormValidationUtil.validateString("Ingrese número de tarjeta: ");
         double quota = FormValidationUtil.validateDouble("Ingrese cupo de crédito: ");
         double creditLimit = FormValidationUtil.validateDouble("Ingrese límite máximo de crédito: ");
+        java.math.BigDecimal quotaB = java.math.BigDecimal.valueOf(quota);
+        java.math.BigDecimal creditLimitB = java.math.BigDecimal.valueOf(creditLimit);
 
-        CreditCard newCard = new CreditCard(cardNumber, quota, creditLimit);
+        CreditCard newCard = new CreditCard(cardNumber, quotaB, creditLimitB);
         creditCardService.createCreditCard(newCard);
 
         System.out.println("\n✅ Tarjeta creada exitosamente: " + cardNumber);
