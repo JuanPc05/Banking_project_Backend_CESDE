@@ -1,13 +1,13 @@
 package bank.infrastructure.out.adapter;
 
-import bank.application.ports.CheckingAccountRepository;
+import bank.application.ports.ICheckingAccountRepository;
 import bank.domain.CheckingAccount;
 import bank.infrastructure.out.mapper.RowMapper;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class CheckingAccountRepositoryDb implements CheckingAccountRepository {
+public class CheckingAccountRepositoryDb implements ICheckingAccountRepository {
 
     private final Connection connection;
     private final RowMapper<CheckingAccount> rowMapper;
@@ -29,7 +29,9 @@ public class CheckingAccountRepositoryDb implements CheckingAccountRepository {
             ps.setBigDecimal(3, account.getBalance());
             ps.setDate(4, Date.valueOf(account.getDateOpened()));
             ps.setString(5, account.getAccountState().name());
+            // El parámetro 6 es el overdraft_percentage
             ps.setDouble(6, account.getOverdraftPercentage());
+            // El parámetro 7 es el overdraft_limit
             ps.setBigDecimal(7, account.getOverdraftLimit());
 
             ps.executeUpdate();
@@ -46,13 +48,16 @@ public class CheckingAccountRepositoryDb implements CheckingAccountRepository {
             ps.setString(1, accountNumber);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
+                    System.out.println("DEBUG: ¡Cuenta encontrada en BD! " + accountNumber);
                     return rowMapper.mapRow(rs);
+                } else {
+                    System.out.println("DEBUG: Consulta ejecutada pero NO encontró la cuenta: " + accountNumber);
                 }
             }
         } catch (SQLException e) {
             throw new RuntimeException("Error al buscar la cuenta: " + accountNumber, e);
         }
-        return null; // O puedes lanzar una Exception si prefieres
+        return null;
     }
 
     @Override

@@ -6,6 +6,8 @@ import bank.application.CheckingAccountServiceImpl;
 import bank.application.SavingsAccountServiceImpl;
 import bank.application.CreditCardServiceImpl;
 import bank.application.ClientServiceImpl;
+import bank.infrastructure.out.mapper.CheckingAccountRowMapper;
+import bank.infrastructure.out.mapper.SavingsAccountRowMapper;
 import bank.userinterface.MainMenuView;
 import bank.userinterface.HomeMenu;
 import bank.infrastructure.in.view.adapter.ClientView;
@@ -31,14 +33,18 @@ public class AppConfig {
 
         // Instanciamos el Mapper que convierte ResultSet a objetos Client
         ClientRowMapper clientRowMapper = new ClientRowMapper();
+        CheckingAccountRowMapper checkingRowMapper = new CheckingAccountRowMapper();
+        SavingsAccountRowMapper savingsRowMapper = new SavingsAccountRowMapper();
+
 
         // 1. Repositorios
-        CheckingAccountRepository checkingRepo = new CheckingAccountRepository();
-        SavingsAccountRepository savingsRepo = new SavingsAccountRepository();
+
+        SavingsAccountRepositoryDb savingsRepo = new SavingsAccountRepositoryDb(connection, savingsRowMapper);
         CreditCardRepository creditCardRepo = new CreditCardRepository();
 
         // Inyectamos la conexión y el mapper en el repositorio de base de datos
         ClientRepositoryDb clientRepo = new ClientRepositoryDb(connection, clientRowMapper);
+        CheckingAccountRepositoryDb checkingRepo = new CheckingAccountRepositoryDb(connection, checkingRowMapper);
 
         // 2. Servicios
         CheckingAccountServiceImpl checkingService = new CheckingAccountServiceImpl(checkingRepo);

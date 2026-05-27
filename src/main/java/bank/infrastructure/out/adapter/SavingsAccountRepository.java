@@ -1,30 +1,31 @@
 package bank.infrastructure.out.adapter;
 
+import bank.application.ports.ISavingsAccountRepository;
 import bank.domain.SavingsAccount;
-import bank.application.ports.SavingsAccountRepositoryPort;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-public class SavingsAccountRepository implements SavingsAccountRepositoryPort {
+// 1. Asegúrate de añadir "implements ISavingsAccountRepository"
+public class SavingsAccountRepository implements ISavingsAccountRepository {
+
     private final Map<String, SavingsAccount> database = new HashMap<>();
 
     @Override
     public void save(SavingsAccount account) {
-
         database.put(account.getAccountNumber(), account);
     }
 
     @Override
-    public Optional<SavingsAccount> findById(String AccountNumber) {
-        return Optional.ofNullable(database.get(AccountNumber));
+    public Optional<SavingsAccount> findById(String accountNumber) {
+        return Optional.ofNullable(database.get(accountNumber));
     }
 
     @Override
     public List<SavingsAccount> findAll() {
-        return List.of();
+        return List.copyOf(database.values());
     }
 
     @Override
@@ -34,8 +35,10 @@ public class SavingsAccountRepository implements SavingsAccountRepositoryPort {
         }
     }
 
+    // 2. CORRECCIÓN: La interfaz ISavingsAccountRepository espera recibir un String,
+    // no el objeto completo.
     @Override
-    public void delete(SavingsAccount savingsAccount) {
-        database.remove(savingsAccount.getAccountNumber());
+    public void delete(String accountNumber) {
+        database.remove(accountNumber);
     }
 }

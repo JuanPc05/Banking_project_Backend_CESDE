@@ -27,7 +27,7 @@ public class SavingsAccountView {
 
     public void deposit() {
         String accountNumber = FormValidationUtil.validateString("Ingrese número de cuenta: ");
-        double amount = FormValidationUtil.validateDouble("Ingrese monto a depositar: ");
+        BigDecimal amount = FormValidationUtil.validateBigDecimal("Ingrese monto a depositar: ");
         try {
             savingsAccountService.deposit(accountNumber, amount);
             System.out.println("✅ Depósito realizado correctamente.");
@@ -38,7 +38,7 @@ public class SavingsAccountView {
 
     public void withdraw() {
         String accountNumber = FormValidationUtil.validateString("Ingrese número de cuenta: ");
-        double amount = FormValidationUtil.validateDouble("Ingrese monto a retirar: ");
+        BigDecimal amount = FormValidationUtil.validateBigDecimal("Ingrese monto a retirar: ");
         try {
             savingsAccountService.withdraw(accountNumber, amount);
             System.out.println("✅ Retiro realizado correctamente.");
