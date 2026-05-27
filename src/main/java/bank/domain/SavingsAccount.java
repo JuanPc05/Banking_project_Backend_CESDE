@@ -39,7 +39,6 @@ public class SavingsAccount extends Account {
                 ", dateOpened=" + dateOpened +
                 ", accountState=" + accountState +
                 ", accountType='" + accountType + '\'' +
-                ", transactions=" + transactions +
                 ", interestRate=" + interestRate +
                 "} " + super.toString();
     }
