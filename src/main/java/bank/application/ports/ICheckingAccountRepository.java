@@ -4,7 +4,7 @@ import bank.domain.CheckingAccount;
 import java.util.List;
 
 
-public interface CheckingAccountRepository {
+public interface ICheckingAccountRepository {
 
 
     void save(CheckingAccount account);

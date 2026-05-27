@@ -4,14 +4,14 @@ import bank.domain.CheckingAccount;
 import bank.domain.Transaction;
 import bank.domain.enums.TransactionType;
 import bank.application.inputs.CheckingAccountService;
-import bank.application.ports.CheckingAccountRepository;
+import bank.application.ports.ICheckingAccountRepository;
 import java.math.BigDecimal;
 import java.util.List;
 
 public class CheckingAccountServiceImpl implements CheckingAccountService {
-    private final CheckingAccountRepository repository;
+    private final ICheckingAccountRepository repository;
 
-    public CheckingAccountServiceImpl(CheckingAccountRepository repository) {
+    public CheckingAccountServiceImpl(ICheckingAccountRepository repository) {
         this.repository = repository;
     }
 
@@ -33,21 +33,27 @@ public class CheckingAccountServiceImpl implements CheckingAccountService {
     @Override
     public void deposit(String accountNumber, double amount) {
         CheckingAccount account = repository.findByAccountNumber(accountNumber);
-        if (account != null) {
-            BigDecimal amountBd = BigDecimal.valueOf(amount);
-            account.setBalance(account.getBalance().add(amountBd));
 
-            // Registro de transacción
-            account.getTransactions().add(new Transaction(
-                    account.getTransactions().size() + 1,
-                    TransactionType.DEPOSIT,
-                    amountBd,
-                    account.getBalance(),
-                    "Depósito realizado"
-            ));
-            repository.update(account);
-            System.out.println("\n✅ Depósito exitoso. Nuevo saldo: $" + account.getBalance());
+
+        if (account == null) {
+            System.out.println("⚠️ Error: La cuenta " + accountNumber + " no existe.");
+            return;
         }
+
+        // Ahora sí, si llegamos aquí, la cuenta existe
+        BigDecimal amountBd = BigDecimal.valueOf(amount);
+        account.setBalance(account.getBalance().add(amountBd));
+
+        // Registro de transacción
+        account.getTransactions().add(new Transaction(
+                account.getTransactions().size() + 1,
+                TransactionType.DEPOSIT,
+                amountBd,
+                account.getBalance(),
+                "Depósito realizado"
+        ));
+        repository.update(account);
+        System.out.println("\n✅ Depósito exitoso. Nuevo saldo: $" + account.getBalance());
     }
 
     @Override

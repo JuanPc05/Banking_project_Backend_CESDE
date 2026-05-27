@@ -3,6 +3,8 @@ package bank.domain;
 import bank.domain.enums.AccountState;
 
 import java.math.BigDecimal;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -30,6 +32,9 @@ public class SavingsAccount extends Account {
     public void setInterestRate(double interestRate) {
         this.interestRate = interestRate;
     }
+
+
+
 
     @Override
     public String toString() {

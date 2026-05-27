@@ -3,6 +3,8 @@ package bank.domain;
 import bank.domain.enums.AccountState;
 
 import java.math.BigDecimal;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -100,6 +102,8 @@ public abstract class Account {
     public void setTransactions(List<Transaction> transactions) {
         this.transactions = transactions;
     }
+
+
 
     @Override
     public String toString() {

@@ -13,16 +13,16 @@ public class CreditCard extends Account {
     private int numberOfInstallments;
     private double creditLimit;
 
-    public CreditCard(String accountNumber, BigDecimal balance, String accountType, BigDecimal quota, double debt, int numberOfInstallments, double creditLimit) {
-        super(accountNumber, balance, accountType);
+    public CreditCard(String accountNumber, BigDecimal balance, String accountType, BigDecimal quota, double debt, int numberOfInstallments, double creditLimit,int clientId) {
+        super(accountNumber, balance, accountType, clientId);
         this.quota = quota;
         this.debt = debt;
         this.numberOfInstallments = numberOfInstallments;
         this.creditLimit = creditLimit;
     }
 
-    public CreditCard(String accountNumber, BigDecimal balance, LocalDate dateOpened, AccountState accountState, String accountType, List<Transaction> transactions, BigDecimal quota, double debt, int numberOfInstallments, double creditLimit) {
-        super(accountNumber, balance, dateOpened, accountState, accountType, transactions);
+    public CreditCard(String accountNumber, BigDecimal balance, LocalDate dateOpened, AccountState accountState, String accountType, List<Transaction> transactions, BigDecimal quota, double debt, int numberOfInstallments, double creditLimit,int clientId) {
+        super(accountNumber, balance, dateOpened, accountState, accountType, transactions, clientId);
         this.quota = quota;
         this.debt = debt;
         this.numberOfInstallments = numberOfInstallments;
@@ -30,9 +30,9 @@ public class CreditCard extends Account {
     }
 
 
-    public CreditCard(String accountNumber, BigDecimal quota, BigDecimal creditLimit) {
+    public CreditCard(String accountNumber, BigDecimal quota, BigDecimal creditLimit,int clientId ) {
 
-        super(accountNumber, BigDecimal.ZERO, "Tarjeta de Crédito");
+        super(accountNumber, BigDecimal.ZERO, "Tarjeta de Crédito" , clientId);
 
         this.quota = quota;
 
