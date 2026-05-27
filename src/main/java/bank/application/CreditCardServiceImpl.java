@@ -35,8 +35,9 @@ public class CreditCardServiceImpl implements CreditCardService {
         if (card == null) {
             throw new IllegalArgumentException("Tarjeta no encontrada.");
         }
+        double nuevaDeuda = card.getDebt() + amount;
 
-        if (card.getDebt() + amount > card.getQuota() || amount > card.getCreditLimit()) {
+        if (java.math.BigDecimal.valueOf(nuevaDeuda).compareTo(card.getQuota()) > 0 || amount > card.getCreditLimit()) {
             throw new IllegalArgumentException("Cupo insuficiente o supera el límite de crédito.");
         }
 

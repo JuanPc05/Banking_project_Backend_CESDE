@@ -3,19 +3,21 @@ package bank.domain;
 import bank.domain.enums.AccountState;
 
 import java.math.BigDecimal;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.List;
 
 public class SavingsAccount extends Account {
     private double interestRate;
 
-    public SavingsAccount(String accountNumber, BigDecimal balance, String accountType, double interestRate) {
-        super(accountNumber, balance, accountType);
+    public SavingsAccount(String accountNumber, BigDecimal balance, String accountType, double interestRate,int clientId) {
+        super(accountNumber, balance, accountType, clientId);
         this.interestRate = interestRate;
     }
 
-    public SavingsAccount(String accountNumber, BigDecimal balance, LocalDate dateOpened, AccountState accountState, String accountType, List<Transaction> transactions, double interestRate) {
-        super(accountNumber, balance, dateOpened, accountState, accountType, transactions);
+    public SavingsAccount(String accountNumber, BigDecimal balance, LocalDate dateOpened, AccountState accountState, String accountType, List<Transaction> transactions, double interestRate,int clientId) {
+        super(accountNumber, balance, dateOpened, accountState, accountType, transactions, clientId);
         this.interestRate = interestRate;
     }
 
@@ -30,6 +32,9 @@ public class SavingsAccount extends Account {
     public void setInterestRate(double interestRate) {
         this.interestRate = interestRate;
     }
+
+
+
 
     @Override
     public String toString() {

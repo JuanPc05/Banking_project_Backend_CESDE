@@ -5,11 +5,11 @@ import bank.domain.SavingsAccount;
 import java.util.List;
 import java.util.Optional;
 
-public interface SavingsAccountRepositoryPort {
+public interface ISavingsAccountRepository {
 
     void save(SavingsAccount savingsAccount);
     Optional<SavingsAccount> findById(String AccountNumber);
     List<SavingsAccount> findAll();
     void update(SavingsAccount savingsAccount);
-    void delete(SavingsAccount savingsAccount);
+    void delete(String accountNumber);
 }

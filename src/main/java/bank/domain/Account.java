@@ -3,6 +3,8 @@ package bank.domain;
 import bank.domain.enums.AccountState;
 
 import java.math.BigDecimal;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -13,33 +15,44 @@ public abstract class Account {
     protected LocalDate dateOpened;
     protected AccountState accountState;
     protected String accountType;
+    protected  int clientId;
     protected List<Transaction> transactions;
 
     // CONSTRUCTOR 1: Para cuentas NUEVAS (Lógica de negocio)
     // No pide fecha ni estado ni transacciones, porque el sistema los define por defecto.
-    public Account(String accountNumber, BigDecimal balance, String accountType) {
+    public Account(String accountNumber, BigDecimal balance, String accountType , int clientId) {
         this.accountNumber = accountNumber;
         this.balance = balance;
         this.dateOpened = LocalDate.now(); // Fecha actual garantizada
         this.accountState = AccountState.ACTIVE; // Estado inicial garantizado
         this.accountType = accountType;
-        this.transactions = new ArrayList<>(); // Lista vacía lista para usar
+        this.transactions = new ArrayList<>();
+        this.clientId = clientId;
     }
 
     // CONSTRUCTOR 2: Para cuentas EXISTENTES (Base de Datos / Mapper)
     // Recibe absolutamente todos los parámetros y los respeta tal cual vienen.
     public Account(String accountNumber, BigDecimal balance, LocalDate dateOpened,
-                   AccountState accountState, String accountType, List<Transaction> transactions) {
+                   AccountState accountState, String accountType, List<Transaction> transactions , int clientId) {
         this.accountNumber = accountNumber;
         this.balance = balance;
         this.dateOpened = dateOpened; // Respeta la fecha original
         this.accountState = accountState; // Respeta si estaba bloqueada o activa
         this.accountType = accountType;
         this.transactions = transactions;
+        this.clientId = clientId;
     }
 
     public Account() {
 
+    }
+
+    public int getClientId() {
+        return clientId;
+    }
+
+    public void setClientId(int clientId) {
+        this.clientId = clientId;
     }
 
     public String getAccountNumber() {
@@ -89,6 +102,8 @@ public abstract class Account {
     public void setTransactions(List<Transaction> transactions) {
         this.transactions = transactions;
     }
+
+
 
     @Override
     public String toString() {

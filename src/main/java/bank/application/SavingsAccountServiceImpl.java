@@ -5,36 +5,49 @@ import bank.domain.Transaction;
 import bank.domain.enums.AccountState;
 import bank.domain.enums.TransactionType;
 import bank.application.inputs.SavingsAccountService;
-import bank.application.ports.SavingsAccountRepositoryPort;
+import bank.application.ports.ISavingsAccountRepository;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Optional;
 
 public class SavingsAccountServiceImpl implements SavingsAccountService {
-    private final SavingsAccountRepositoryPort repository;
+    private final ISavingsAccountRepository repository;
 
-    public SavingsAccountServiceImpl(SavingsAccountRepositoryPort repository) {
+    public SavingsAccountServiceImpl(ISavingsAccountRepository repository) {
         this.repository = repository;
     }
 
     // En SavingsAccountServiceImpl
+
     @Override
-    public SavingsAccount createAccount(String accountNumber, double initialBalance) {
+    public SavingsAccount createAccount(String accountNumber, BigDecimal initialBalance, int clientId) {
         Optional<SavingsAccount> existing = repository.findById(accountNumber);
         if (existing.isPresent()) {
             throw new IllegalArgumentException("La cuenta " + accountNumber + " ya existe.");
         }
 
-        SavingsAccount newAccount = new SavingsAccount(accountNumber, initialBalance, LocalDate.now(),"ACTIVE","SAVINGS",new ArrayList<>(),0.02);
+        // Aquí ya tienes tus 8 parámetros (String, BigDecimal, LocalDate, Enum, String, List, double, int)
+        SavingsAccount newAccount = new SavingsAccount(
+                accountNumber,
+                initialBalance,
+                LocalDate.now(),
+                AccountState.ACTIVE,
+                "SAVINGS",
+                new ArrayList<>(),
+                0.02,
+                clientId
+        );
+
         repository.save(newAccount);
-        System.out.println("✅ Cuenta de ahorros creada con número: " + accountNumber);
+        System.out.println("✅ Cuenta de ahorros creada con éxito.");
         return newAccount;
     }
 
 
     @Override
-    public void deposit(String accountNumber, double amount) {
+    public void deposit(String accountNumber, BigDecimal amount) {
         Optional<SavingsAccount> accountOpt = repository.findById(accountNumber);
 
         if (accountOpt.isEmpty()) {
@@ -49,18 +62,20 @@ public class SavingsAccountServiceImpl implements SavingsAccountService {
             return;
         }
 
-        if (amount <= 0) {
+        if (amount.compareTo(BigDecimal.ZERO) <= 0) {
             System.out.println("Error: El monto a depositar debe ser mayor a cero.");
             return;
         }
 
-        double newBalance = account.getBalance() + amount;
+
+        BigDecimal newBalance = account.getBalance().add(amount);
         account.setBalance(newBalance);
 
         Transaction depositRecord = new Transaction(
                 account.getTransactions().size() + 1,
                 TransactionType.DEPOSIT,
                 amount,
+
                 newBalance,
                 "Depósito en cuenta de ahorros desde el servicio"
         );
@@ -71,45 +86,31 @@ public class SavingsAccountServiceImpl implements SavingsAccountService {
     }
 
     @Override
-    public void withdraw(String accountNumber, double amount) {
+    public void withdraw(String accountNumber, BigDecimal amount) {
+        // 1. Buscamos la cuenta
         Optional<SavingsAccount> accountOpt = repository.findById(accountNumber);
 
+        // 2. Validación de existencia: ¡Esta es la clave!
         if (accountOpt.isEmpty()) {
             System.out.println("Error: La cuenta " + accountNumber + " no existe.");
-            return;
+            return; // Detiene la ejecución aquí mismo si no existe
         }
 
         SavingsAccount account = accountOpt.get();
 
-        if (account.getAccountState() != AccountState.ACTIVE) {
-            System.out.println("Error: La cuenta no está activa.");
-            return;
+        // 3. Validación de saldo suficiente
+        if (account.getBalance().compareTo(amount) >= 0) {
+            // Realizamos la operación en memoria
+            account.setBalance(account.getBalance().subtract(amount));
+
+            // 4. Persistimos el cambio en la base de datos
+            repository.update(account);
+
+            System.out.println("✅ Retiro realizado correctamente.");
+        } else {
+            System.out.println("Error: Saldo insuficiente para realizar el retiro.");
         }
 
-        if (amount <= 0) {
-            System.out.println("Error: El monto a retirar debe ser mayor a cero.");
-            return;
-        }
-
-        if (account.getBalance() < amount) {
-            System.out.println("Error: Saldo insuficiente. Tu saldo es: $" + account.getBalance());
-            return;
-        }
-
-        double newBalance = account.getBalance() - amount;
-        account.setBalance(newBalance);
-
-        Transaction withdrawalRecord = new Transaction(
-                account.getTransactions().size() + 1,
-                TransactionType.WITHDRAWAL,
-                amount,
-                newBalance,
-                "Retiro en cuenta de ahorros desde el servicio"
-        );
-        account.getTransactions().add(withdrawalRecord);
-
-        repository.update(account);
-        System.out.println("Retiro exitoso. Nuevo saldo: $" + newBalance);
     }
 
     @Override
@@ -128,9 +129,9 @@ public class SavingsAccountServiceImpl implements SavingsAccountService {
             return;
         }
 
-        double interestAmount = account.getBalance() * (account.getInterestRate() / 100);
-        double newBalance = account.getBalance() + interestAmount;
-        account.setBalance(newBalance);
+        BigDecimal interestRate = BigDecimal.valueOf(account.getInterestRate() / 100.0);
+        BigDecimal interestAmount = account.getBalance().multiply(interestRate);
+        BigDecimal newBalance = account.getBalance().add(interestAmount);
 
         Transaction interestRecord = new Transaction(
                 account.getTransactions().size() + 1,
