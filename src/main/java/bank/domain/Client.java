@@ -4,15 +4,15 @@ public class
 Client {
     public static final int MAX_USER_INTENTS = 3;
 
-    protected int id;
-    protected String identification;
-    protected String fullName;
-    protected String cellPhone;
-    protected String userName;
-    protected String password;
-    protected int failedIntents;
-    protected boolean isAuthenticated;
-    protected boolean isBlocked;
+    private int id;
+    private String identification;
+    private String fullName;
+    private String cellPhone;
+    private String userName;
+    private String password;
+    private int failedIntents;
+    private boolean isAuthenticated;
+    private boolean isBlocked;
 
     public Client() {}
 
