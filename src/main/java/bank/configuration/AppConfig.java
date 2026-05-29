@@ -1,5 +1,10 @@
 package bank.configuration;
 
+import bank.application.inputs.IClientManagement;
+import bank.application.ports.ICheckingAccountRepository;
+import bank.application.ports.ITransactionRepository;
+import bank.domain.Transaction;
+import bank.infrastructure.in.view.adapter.CheckingAccountView;
 import bank.infrastructure.out.adapter.*;
 import bank.infrastructure.out.db.DatabaseConnectionMySQL; // Importamos tu clase Singleton
 import bank.application.CheckingAccountServiceImpl;
@@ -8,6 +13,7 @@ import bank.application.CreditCardServiceImpl;
 import bank.application.ClientServiceImpl;
 import bank.infrastructure.out.mapper.CheckingAccountRowMapper;
 import bank.infrastructure.out.mapper.SavingsAccountRowMapper;
+import bank.infrastructure.out.mapper.TransactionRowMapper;
 import bank.userinterface.MainMenuView;
 import bank.userinterface.HomeMenu;
 import bank.infrastructure.in.view.adapter.ClientView;
@@ -35,33 +41,40 @@ public class AppConfig {
         ClientRowMapper clientRowMapper = new ClientRowMapper();
         CheckingAccountRowMapper checkingRowMapper = new CheckingAccountRowMapper();
         SavingsAccountRowMapper savingsRowMapper = new SavingsAccountRowMapper();
+        TransactionRowMapper transactionRowMapper= new TransactionRowMapper();
 
 
         // 1. Repositorios
 
         SavingsAccountRepositoryDb savingsRepo = new SavingsAccountRepositoryDb(connection, savingsRowMapper);
-        CreditCardRepository creditCardRepo = new CreditCardRepository();
+        CreditCardRepositoryDb creditCardRepo = new CreditCardRepositoryDb(connection);
 
         // Inyectamos la conexión y el mapper en el repositorio de base de datos
         ClientRepositoryDb clientRepo = new ClientRepositoryDb(connection, clientRowMapper);
         CheckingAccountRepositoryDb checkingRepo = new CheckingAccountRepositoryDb(connection, checkingRowMapper);
+        ITransactionRepository transactionRepo = new TransactionRepositoryDb(connection, transactionRowMapper);
+
+
 
         // 2. Servicios
-        CheckingAccountServiceImpl checkingService = new CheckingAccountServiceImpl(checkingRepo);
-        SavingsAccountServiceImpl savingsService = new SavingsAccountServiceImpl(savingsRepo);
+
+        CheckingAccountServiceImpl checkingService = new CheckingAccountServiceImpl(checkingRepo , transactionRepo , savingsRepo);
+        SavingsAccountServiceImpl savingsService = new SavingsAccountServiceImpl(savingsRepo ,transactionRepo ,checkingRepo);
         CreditCardServiceImpl creditCardService = new CreditCardServiceImpl(creditCardRepo);
         ClientServiceImpl clientService = new ClientServiceImpl(clientRepo);
 
         // 3. Vistas
         ClientView clientView = new ClientView(clientService, clientService);
-        SavingsAccountView savingsAccountView = new SavingsAccountView(savingsService);
+        SavingsAccountView savingsAccountView = new SavingsAccountView(savingsService , clientService );
         CreditCardView creditCardView = new CreditCardView(creditCardService);
+        CheckingAccountView checkingAccountView = new CheckingAccountView(checkingService, clientService);
 
         // 4. Menús
         MainMenuView mainMenuView = new MainMenuView(
                 checkingService,
                 savingsAccountView,
-                creditCardService
+                creditCardService,clientService
+
         );
 
         // 5. Retornamos el menú de entrada (Home)

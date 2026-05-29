@@ -20,6 +20,7 @@ public class MenuSavingsAccount {
             System.out.println("4. Aplicar intereses");
             System.out.println("5. Consultar saldo");
             System.out.println("6. Ver movimientos");
+            System.out.println("7. Transferir dinero");
             System.out.println("0. Volver al menú principal");
 
             option = FormValidationUtil.validateInt("Seleccione una opción: ");
@@ -31,6 +32,7 @@ public class MenuSavingsAccount {
                 case 4 -> savingsAccountView.applyInterest();
                 case 5 -> savingsAccountView.showBalance();
                 case 6 -> savingsAccountView.showTransactions();
+                case 7 -> savingsAccountView.transfer();
                 case 0 -> System.out.println("Regresando al menú principal...");
                 default -> System.out.println("⚠️ Opción inválida.");
             }

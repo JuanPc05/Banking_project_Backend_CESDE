@@ -120,4 +120,24 @@ public class TransactionRepositoryDb implements ITransactionRepository {
 
         return allTransactions;
     }
+
+    public List<Transaction> getTransactionsByAccount(String accountNumber) {
+        String sql = "SELECT * FROM transactions WHERE account_number = ?"; // Verifica si el campo es account_number o parecido
+        List<Transaction> transactions = new ArrayList<>();
+
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setString(1, accountNumber);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    // Aquí usamos el TransactionRowMapper
+                    transactions.add(transactionRowMapper.mapRow(rs));
+                }
+            }
+        } catch (SQLException e) {
+            // 🔥 ESTA LÍNEA ES CLAVE: imprime el error real de SQL
+            e.printStackTrace();
+            throw new RuntimeException("Error al buscar el historial de la cuenta: " + accountNumber, e);
+        }
+        return transactions;
+    }
 }

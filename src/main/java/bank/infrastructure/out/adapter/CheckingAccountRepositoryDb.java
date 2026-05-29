@@ -48,11 +48,11 @@ public class CheckingAccountRepositoryDb implements ICheckingAccountRepository {
             ps.setString(1, accountNumber);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
-                    System.out.println("DEBUG: ¡Cuenta encontrada en BD! " + accountNumber);
+
                     return rowMapper.mapRow(rs);
-                } else {
-                    System.out.println("DEBUG: Consulta ejecutada pero NO encontró la cuenta: " + accountNumber);
                 }
+
+
             }
         } catch (SQLException e) {
             throw new RuntimeException("Error al buscar la cuenta: " + accountNumber, e);
@@ -104,4 +104,22 @@ public class CheckingAccountRepositoryDb implements ICheckingAccountRepository {
             throw new RuntimeException("Error al eliminar la cuenta", e);
         }
     }
+
+    @Override
+    public CheckingAccount findByClientId(int clientId) {
+        String sql = "SELECT * FROM accounts WHERE client_id = ? AND account_type = 'CHECKING'";
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setInt(1, clientId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rowMapper.mapRow(rs);
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Error al buscar cuenta por cliente: " + clientId, e);
+        }
+        return null;
+    }
+
+
 }

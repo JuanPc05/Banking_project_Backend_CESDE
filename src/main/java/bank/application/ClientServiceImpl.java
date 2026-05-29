@@ -107,4 +107,12 @@ public class ClientServiceImpl implements IAuthenticable, IClientManagement {
         // Aquí SÍ hacemos update porque el password es un dato que persiste en base de datos
         clientRepository.update(client);
     }
+
+    @Override
+    public Client getClient(int clientId) {
+        // Usa el repositorio de clientes para buscar por su ID numérico de la BD
+        // Si tu repositorio usa findById, lo llamamos así:
+        return clientRepository.findById(clientId)
+                .orElseThrow(() -> new IllegalArgumentException("Cliente no encontrado con el ID: " + clientId));
+    }
 }
