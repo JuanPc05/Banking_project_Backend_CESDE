@@ -12,7 +12,7 @@ public interface ICheckingAccountRepository {
     List<CheckingAccount> findAll();
     void update(CheckingAccount account);
     void delete(String accountNumber);
-    CheckingAccount findByClientId(int clientId);
+    List<CheckingAccount> findByClientId(int clientId);
 
 }
 

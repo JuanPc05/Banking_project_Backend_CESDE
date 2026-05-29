@@ -16,12 +16,12 @@ import java.util.List;
 import java.util.Optional;
 
 public class SavingsAccountServiceImpl implements SavingsAccountService {
-    private final ISavingsAccountRepository repository;
+    private final ISavingsAccountRepository iSavingsAccountRepository;
     private final ITransactionRepository transactionRepository;
     private final ICheckingAccountRepository checkingRepository;
 
     public SavingsAccountServiceImpl(ISavingsAccountRepository repository , ITransactionRepository transactionRepository ,  ICheckingAccountRepository checkingRepository ) {
-        this.repository = repository;
+        this.iSavingsAccountRepository = repository;
         this.transactionRepository = transactionRepository;
         this.checkingRepository = checkingRepository;
     }
@@ -31,7 +31,7 @@ public class SavingsAccountServiceImpl implements SavingsAccountService {
 
     @Override
     public SavingsAccount createAccount(String accountNumber, BigDecimal initialBalance, int clientId) {
-        Optional<SavingsAccount> existing = repository.findById(accountNumber);
+        Optional<SavingsAccount> existing = iSavingsAccountRepository.findById(accountNumber);
         if (existing.isPresent()) {
             throw new IllegalArgumentException("La cuenta " + accountNumber + " ya existe.");
         }
@@ -48,7 +48,7 @@ public class SavingsAccountServiceImpl implements SavingsAccountService {
                 clientId
         );
 
-        repository.save(newAccount);
+        iSavingsAccountRepository.save(newAccount);
         System.out.println("✅ Cuenta de ahorros creada con éxito.");
         return newAccount;
     }
@@ -56,7 +56,7 @@ public class SavingsAccountServiceImpl implements SavingsAccountService {
 
     @Override
     public void deposit(String accountNumber, BigDecimal amount) {
-        Optional<SavingsAccount> accountOpt = repository.findById(accountNumber);
+        Optional<SavingsAccount> accountOpt = iSavingsAccountRepository.findById(accountNumber);
 
         if (accountOpt.isEmpty()) {
             System.out.println("Error: La cuenta " + accountNumber + " no existe.");
@@ -90,14 +90,14 @@ public class SavingsAccountServiceImpl implements SavingsAccountService {
         transactionRepository.save(depositRecord);
         account.getTransactions().add(depositRecord);
 
-        repository.update(account);
+        iSavingsAccountRepository.update(account);
         System.out.println("Depósito exitoso. Nuevo saldo: $" + newBalance);
     }
 
     @Override
     public void withdraw(String accountNumber, BigDecimal amount) {
         // 1. Buscamos la cuenta
-        Optional<SavingsAccount> accountOpt = repository.findById(accountNumber);
+        Optional<SavingsAccount> accountOpt = iSavingsAccountRepository.findById(accountNumber);
 
         // 2. Validación de existencia: ¡Esta es la clave!
         if (accountOpt.isEmpty()) {
@@ -124,7 +124,7 @@ public class SavingsAccountServiceImpl implements SavingsAccountService {
             transactionRepository.save(withdrawRecord);
             account.getTransactions().add(withdrawRecord);
 
-            repository.update(account);
+            iSavingsAccountRepository.update(account);
             System.out.println("✅ Retiro realizado correctamente.");
         } else {
             System.out.println("Error: Saldo insuficiente para realizar el retiro.");
@@ -134,7 +134,7 @@ public class SavingsAccountServiceImpl implements SavingsAccountService {
 
     @Override
     public void applyInterest(String accountNumber) {
-        Optional<SavingsAccount> accountOpt = repository.findById(accountNumber);
+        Optional<SavingsAccount> accountOpt = iSavingsAccountRepository.findById(accountNumber);
 
         if (accountOpt.isEmpty()) {
             System.out.println("Error: La cuenta " + accountNumber + " no existe.");
@@ -162,21 +162,23 @@ public class SavingsAccountServiceImpl implements SavingsAccountService {
         transactionRepository.save(interestRecord);
         account.getTransactions().add(interestRecord);
 
-        repository.update(account);
+        iSavingsAccountRepository.update(account);
         System.out.println("Intereses aplicados a la cuenta " + accountNumber + ": $" + interestAmount);
     }
 
     @Override
     public    SavingsAccount getAccount(String accountNumber) {
-        Optional<SavingsAccount> accountOpt = repository.findById(accountNumber);
+        Optional<SavingsAccount> accountOpt = iSavingsAccountRepository.findById(accountNumber);
         if (accountOpt.isEmpty()) {
             throw new IllegalArgumentException("La cuenta " + accountNumber + " no existe.");
         }
         return accountOpt.get();
     }
+
+
     @Override
     public List<Transaction> getTransactionsByAccount(String accountNumber) {
-        Optional<SavingsAccount> accountOpt = repository.findById(accountNumber);
+        Optional<SavingsAccount> accountOpt = iSavingsAccountRepository.findById(accountNumber);
         if (accountOpt.isEmpty()) {
             System.out.println("⚠️ La cuenta no existe.");
             return new ArrayList<>();
@@ -188,7 +190,7 @@ public class SavingsAccountServiceImpl implements SavingsAccountService {
     public void transfer(String fromAccount, String toAccount, BigDecimal amount) {
 
 
-        Optional<SavingsAccount> originOpt = repository.findById(fromAccount);
+        Optional<SavingsAccount> originOpt = iSavingsAccountRepository.findById(fromAccount);
         if (originOpt.isEmpty()) {
             System.out.println("⚠️ Error: La cuenta de ahorros origen (" + fromAccount + ") no existe.");
             return;
@@ -211,7 +213,7 @@ public class SavingsAccountServiceImpl implements SavingsAccountService {
             System.out.println("⚠️ Error: Fondos insuficientes en la cuenta de ahorros origen.");
             return;
         }
-        Optional<SavingsAccount> destSavingsOpt = repository.findById(toAccount);
+        Optional<SavingsAccount> destSavingsOpt = iSavingsAccountRepository.findById(toAccount);
         bank.domain.CheckingAccount destChecking = checkingRepository.findByAccountNumber(toAccount);
         // 3. Efectuar la transferencia según el tipo de cuenta destino encontrada
         if (destSavingsOpt.isPresent()) {
@@ -222,8 +224,8 @@ public class SavingsAccountServiceImpl implements SavingsAccountService {
             destSavings.setBalance(destSavings.getBalance().add(amount));
 
             // Persistir saldos actualizados
-            repository.update(origin);
-            repository.update(destSavings);
+            iSavingsAccountRepository.update(origin);
+            iSavingsAccountRepository.update(destSavings);
 
             System.out.println("\n💸 ¡Transferencia exitosa de Ahorros a Ahorros!");
 
@@ -233,8 +235,9 @@ public class SavingsAccountServiceImpl implements SavingsAccountService {
             destChecking.setBalance(destChecking.getBalance().add(amount));
 
             // Persistir saldos en sus respectivas tablas correspondientes
-            repository.update(origin); // Actualiza la tabla de ahorros
+            iSavingsAccountRepository.update(origin); // Actualiza la tabla de ahorros
             checkingRepository.update(destChecking); // Actualiza la tabla de corrientes
+
 
             System.out.println("\n💸 ¡Transferencia  exitosa (Ahorros -> Corriente)!");
 
@@ -263,5 +266,12 @@ public class SavingsAccountServiceImpl implements SavingsAccountService {
                 "Transferencia recibida de cuenta de ahorros " + fromAccount
         );
         transactionRepository.save(transferInRecord);
+
+
+    }
+    @Override
+    public List<SavingsAccount> findByClientId(int clientId) {
+        // Le pide al repositorio que busque las cuentas de ahorro de ese cliente en la BD
+        return iSavingsAccountRepository.findByClientId(clientId);
     }
 }

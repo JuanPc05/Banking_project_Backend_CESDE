@@ -9,13 +9,15 @@ import java.util.List;
 
 public interface CheckingAccountService {
 
-    CheckingAccount getAccountByClientId(int clientId);
-
     void createAccount(CheckingAccount account);
+    List<CheckingAccount> getAllAccounts(int clientId);
+    CheckingAccount findByAccountNumber(String accountNumber);
+
+    CheckingAccount getAccountByClientId(int clientId);
 
     CheckingAccount getAccount(String accountNumber);
 
-    List<CheckingAccount> getAllAccounts();
+    List<CheckingAccount> findByClientId(int clientId);
 
     void deposit(String accountNumber, BigDecimal amount);
 

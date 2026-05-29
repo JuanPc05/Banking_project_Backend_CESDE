@@ -6,17 +6,16 @@ import bank.application.inputs.CheckingAccountService;
 import bank.infrastructure.util.FormValidationUtil;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 public class CheckingAccountView {
     private final CheckingAccountService checkingAccountService;
     private final IClientManagement clientManagement;
     private int currentClientId;
 
-    public CheckingAccountView(CheckingAccountService checkingAccountService , IClientManagement clientManagement ) {
+    public CheckingAccountView(CheckingAccountService checkingAccountService, IClientManagement clientManagement) {
         this.checkingAccountService = checkingAccountService;
         this.clientManagement = clientManagement;
-
-
     }
 
     public void setLoggedInClientId(int clientId) {
@@ -42,8 +41,8 @@ public class CheckingAccountView {
                 case 1 -> createAccount();
                 case 2 -> getAccount();
                 case 3 -> getAllAccounts();
-                case 4 -> deposit();
-                case 5 -> withdraw();
+                case 4 -> performTransaction("depositar");
+                case 5 -> performTransaction("retirar");
                 case 6 -> transfer();
                 case 7 -> showTransactions();
                 case 0 -> System.out.println("👋 Saliendo...");
@@ -52,150 +51,214 @@ public class CheckingAccountView {
         } while (option != 0);
     }
 
+    // --- MÉTODOS AUXILIARES ---
+
+    private CheckingAccount selectAccount() {
+        List<CheckingAccount> accounts = checkingAccountService.findByClientId(this.currentClientId);
+        if (accounts.isEmpty()) {
+            System.out.println("⚠️ No tienes cuentas registradas.");
+            return null;
+        }
+        if (accounts.size() == 1) return accounts.get(0);
+
+        System.out.println("Seleccione una cuenta:");
+        for (int i = 0; i < accounts.size(); i++) {
+            System.out.println((i + 1) + ". " + accounts.get(i).getAccountNumber());
+        }
+        int index = FormValidationUtil.validateInt("Opción: ") - 1;
+        return (index >= 0 && index < accounts.size()) ? accounts.get(index) : null;
+    }
+
+    private void performTransaction(String type) {
+        CheckingAccount acc = selectAccount();
+        if (acc == null) return;
+        BigDecimal amount = FormValidationUtil.validateBigDecimal("Ingrese monto a " + type + ": ");
+        if (type.equals("depositar")) checkingAccountService.deposit(acc.getAccountNumber(), amount);
+        else checkingAccountService.withdraw(acc.getAccountNumber(), amount);
+    }
+
+    // --- MÉTODOS ORIGINALES ---
+
     private void createAccount() {
         String accountNumber = FormValidationUtil.validateString("Ingrese número de cuenta: ");
         int clientId = FormValidationUtil.validateInt("Ingrese ID del cliente dueño: ");
-
         BigDecimal balance = FormValidationUtil.validateBigDecimal("Ingrese saldo inicial: ");
         BigDecimal overdraftLimit = FormValidationUtil.validateBigDecimal("Ingrese límite de sobregiro: ");
         double overdraftPercentage = FormValidationUtil.validateDouble("Ingrese porcentaje de sobregiro: ");
 
-        // ✅ ORDEN CORREGIDO: Coincide perfectamente con los parámetros de tu entidad CheckingAccount
-        CheckingAccount newAccount = new CheckingAccount(
-                accountNumber,
-                balance,
-                "Cuenta Corriente",
-                clientId,
-                overdraftPercentage,
-                overdraftLimit
-        );
-
+        CheckingAccount newAccount = new CheckingAccount(accountNumber, balance, "Cuenta Corriente", clientId, overdraftPercentage, overdraftLimit);
         checkingAccountService.createAccount(newAccount);
         System.out.println("\n✅ Cuenta creada exitosamente.");
     }
 
-    private void getAccount() {
-        String accountNumber = FormValidationUtil.validateString("Ingrese número de cuenta: ");
-        try {
-            var account = checkingAccountService.getAccount(accountNumber);
 
-            System.out.println(formatAccountForDisplay(account));
-        } catch (IllegalArgumentException e) {
-            System.out.println("⚠️ " + e.getMessage());
-        }
+    private void printAccountDetails(CheckingAccount acc) {
+        System.out.println("\n==========================================");
+        System.out.println("          DETALLES DE LA CUENTA           ");
+        System.out.println("==========================================");
+        System.out.printf(" %-20s : %s%n", "Número de cuenta", acc.getAccountNumber());
+        System.out.printf(" %-20s : $ %,.2f%n", "Saldo disponible", acc.getBalance());
+        System.out.printf(" %-20s : %s%n", "Estado", acc.getAccountState());
+        System.out.printf(" %-20s : %s%n", "Tipo", acc.getAccountType());
+        System.out.println("------------------------------------------");
+        System.out.printf(" %-20s : %s%n", "Fecha de apertura", acc.getDateOpened());
+        System.out.printf(" %-20s : $ %,.2f%n", "Límite sobregiro", acc.getOverdraftLimit());
+        System.out.printf(" %-20s : %.1f%%%n", "Porcentaje sobregiro", acc.getOverdraftPercentage());
+        System.out.println("==========================================\n");
     }
 
-
+    private void getAccount() {
+        CheckingAccount acc = selectAccount();
+        if (acc != null) {
+            printAccountDetails(acc);
+        }
+    }
 
     private void getAllAccounts() {
-        var accounts = checkingAccountService.getAllAccounts();
-        if (accounts.isEmpty()) {
-            System.out.println("⚠️ No hay cuentas registradas.");
-        } else {
-            // ✅ Usa el formateador local para cada cuenta
-            accounts.forEach(account -> System.out.println(formatAccountForDisplay(account)));
-        }
+        List<CheckingAccount> accounts = checkingAccountService.getAllAccounts(this.currentClientId);
+        if (accounts.isEmpty()) System.out.println("⚠️ No hay cuentas registradas.");
+        else accounts.forEach(a -> System.out.println(formatAccountForDisplay(a)));
     }
-    private void deposit() {
-        String accountNumber = FormValidationUtil.validateString("Ingrese número de cuenta: ");
-        BigDecimal amount = FormValidationUtil.validateBigDecimal("Ingrese monto a depositar: ");
-        checkingAccountService.deposit(accountNumber, amount);
-    }
-
-    private void withdraw() {
-        String accountNumber = FormValidationUtil.validateString("Ingrese número de cuenta: ");
-        BigDecimal amount = FormValidationUtil.validateBigDecimal("Ingrese monto a retirar: ");
-        checkingAccountService.withdraw(accountNumber, amount);
-    }
-
 
     public void transfer() {
         System.out.println("\n--- TRANSFERENCIA CUENTA CORRIENTE ---");
-        String fromAccount = FormValidationUtil.validateString("Ingrese número de cuenta corriente origen: ");
+        CheckingAccount fromAcc = selectAccount();
+        if (fromAcc == null) return;
+
         String toAccount = FormValidationUtil.validateString("Ingrese número de cuenta destino: ");
         BigDecimal amount = FormValidationUtil.validateBigDecimal("Ingrese monto a transferir: ");
 
-        checkingAccountService.transfer(fromAccount, toAccount, amount);
+        try {
+            // 1. Ejecutamos la transferencia en el servicio
+            checkingAccountService.transfer(fromAcc.getAccountNumber(), toAccount, amount);
+
+            // 2. Buscamos los datos del destinatario para el mensaje final
+            String destClientName = "Desconocido";
+            try {
+                CheckingAccount destAcc = checkingAccountService.findByAccountNumber(toAccount);
+                if (destAcc != null) {
+                    destClientName = clientManagement.getClient(destAcc.getClientId()).getFullName();
+                }
+            } catch (Exception e) {
+                // Si no encuentra los datos adicionales, dejamos el nombre por defecto
+            }
+
+            // 3. Imprimimos el comprobante detallado y bonito
+            System.out.println("\n==================================================");
+            System.out.println("         💸 ¡TRANSFERENCIA EXITOSA!               ");
+            System.out.println("==================================================");
+            System.out.printf(" Origen     : Cuenta %s%n", fromAcc.getAccountNumber());
+            System.out.printf(" Destino    : Cuenta %s%n", toAccount);
+            System.out.printf(" Beneficiario: %s%n", destClientName);
+            System.out.printf(" Monto      : $ %,.2f%n", amount);
+            System.out.println("==================================================\n");
+
+        } catch (Exception e) {
+            System.out.println("\n⚠️ Error al realizar la transferencia: " + e.getMessage());
+        }
     }
+
+
 
     public void showTransactions() {
         try {
-            // 1. Obtener la cuenta corriente del cliente logueado
-            CheckingAccount account = checkingAccountService.getAccountByClientId(this.currentClientId);
+            CheckingAccount account = selectAccount();
+            if (account == null) return;
 
-            if (account == null) {
-                System.out.println("⚠️ No tienes una cuenta corriente asociada.");
-                return;
-            }
-
-            // 2. Obtener el nombre del titular logueado
             String clientName = clientManagement.getClient(account.getClientId()).getFullName();
             String accountNumber = account.getAccountNumber();
             java.util.List<bank.domain.Transaction> transactions = checkingAccountService.getTransactionsByAccount(accountNumber);
 
-            System.out.println("\n📄 REPORTE DE MOVIMIENTOS");
-            System.out.println("Titular: " + clientName);
-            System.out.println("Cuenta: " + accountNumber);
+            System.out.println("\n==================================================");
+            System.out.println("             📄 REPORTE DE MOVIMIENTOS            ");
+            System.out.println("==================================================");
+            System.out.println(" Titular: " + clientName);
+            System.out.println(" Cuenta : " + accountNumber);
             System.out.println("==================================================");
 
+            if (transactions.isEmpty()) {
+                System.out.println("   No se registraron movimientos en esta cuenta.  ");
+                System.out.println("==================================================");
+                return;
+            }
+
             for (bank.domain.Transaction t : transactions) {
-                String fecha = (t.getTimestamp() != null)
-                        ? t.getTimestamp().format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"))
-                        : "Sin fecha";
+                // --- 1. FORMATEO DE FECHA (Igual que en ahorros) ---
+                String fechaOriginal = t.getTimestamp().toString();
+                String fechaFormateada = fechaOriginal;
+                if (fechaOriginal.contains("T")) {
+                    fechaFormateada = fechaOriginal.split("T")[0]; // Nos quedamos solo con YYYY-MM-DD
+                }
 
-                String detalleFinal = t.getDescription();
+                // --- 2. DETECCIÓN Y TRADUCCIÓN DEL TIPO ---
+                String tipoMovimiento = t.getTransactionType().toString();
+                String detallesAdicionales = "";
 
-                // 3. Extraer el número de cuenta de la descripción si aplica
-                String accountNum = extractAccountNumber(t.getDescription());
-                if (accountNum != null) {
-                    try {
-                        // Usamos el nuevo método del servicio que busca en ambas tablas (Corrientes y Ahorros)
-                        int targetClientId = checkingAccountService.getClientIdByAccountNumber(accountNum);
+                if (tipoMovimiento.equals("DEPOSIT")) {
+                    tipoMovimiento = "DEPÓSITO";
+                } else if (tipoMovimiento.equals("WITHDRAW")) {
+                    tipoMovimiento = "RETIRO";
+                } else if (tipoMovimiento.equals("TRANSFER_OUT")) {
+                    tipoMovimiento = "TRANSFERENCIA ENVIADA";
 
-                        if (targetClientId != -1) {
-                            var clientDest = clientManagement.getClient(targetClientId);
-                            detalleFinal = t.getDescription() + " (Titular: " + clientDest.getFullName() + ")";
+                    // Extracción con el método que limpia la descripción
+                    String cuentaDestino = extractAccountNumber(t.getDescription());
+                    if (cuentaDestino != null) {
+                        try {
+                            CheckingAccount destAcc = checkingAccountService.findByAccountNumber(cuentaDestino);
+                            if (destAcc != null) {
+                                String destClientName = clientManagement.getClient(destAcc.getClientId()).getFullName();
+                                detallesAdicionales = "\n Destino : " + destClientName + " (Cta: " + cuentaDestino + ")";
+                            } else {
+                                detallesAdicionales = "\n Destino : Cuenta " + cuentaDestino;
+                            }
+                        } catch (Exception e) {
+                            detallesAdicionales = "\n Destino : Cuenta " + cuentaDestino;
                         }
-                    } catch (Exception e) {
-                        // Si ocurre un error al buscar, se mantiene la descripción original sin romper el reporte
+                    }
+                } else if (tipoMovimiento.equals("TRANSFER_IN")) {
+                    tipoMovimiento = "TRANSFERENCIA RECIBIDA";
+
+                    String cuentaOrigen = extractAccountNumber(t.getDescription());
+                    if (cuentaOrigen != null) {
+                        try {
+                            CheckingAccount origAcc = checkingAccountService.findByAccountNumber(cuentaOrigen);
+                            if (origAcc != null) {
+                                String origClientName = clientManagement.getClient(origAcc.getClientId()).getFullName();
+                                detallesAdicionales = "\n Origen  : " + origClientName + " (Cta: " + cuentaOrigen + ")";
+                            } else {
+                                detallesAdicionales = "\n Origen  : Cuenta " + cuentaOrigen;
+                            }
+                        } catch (Exception e) {
+                            detallesAdicionales = "\n Origen  : Cuenta " + cuentaOrigen;
+                        }
                     }
                 }
 
-                System.out.println("Fecha: " + fecha + " | Tipo: " + t.getTransactionType());
-                System.out.println("Monto: $" + t.getAmount());
-                System.out.println("Detalle: " + detalleFinal);
+                // --- 3. IMPRESIÓN CON FORMATO LIMPIO ---
+                System.out.println(" Fecha  : " + fechaFormateada);
+                System.out.println(" Tipo   : " + tipoMovimiento + detallesAdicionales);
+                System.out.printf(" Monto  : $ %,.2f%n", t.getAmount());
                 System.out.println("--------------------------------------------------");
             }
         } catch (Exception e) {
-            System.out.println("⚠️ Error al procesar la consulta: " + e.getMessage());
+            System.out.println("⚠️ Error al procesar el reporte de movimientos.");
             e.printStackTrace();
         }
     }
 
 
 
-
     private String extractAccountNumber(String description) {
-        // Busca números en la cadena (asumiendo cuentas de 6 dígitos)
         java.util.regex.Pattern pattern = java.util.regex.Pattern.compile("\\d{6}");
         java.util.regex.Matcher matcher = pattern.matcher(description);
-        if (matcher.find()) {
-            return matcher.group();
-        }
-        return null;
+        return matcher.find() ? matcher.group() : null;
     }
-
 
     private String formatAccountForDisplay(CheckingAccount account) {
         return "--------------------------------------------------\n" +
                 "Número de Cuenta: " + account.getAccountNumber() + "\n" +
                 "Saldo: $" + account.getBalance() + "\n" +
-                "ID Cliente: " + account.getClientId() + "\n" +
-                "Límite Sobregiro: $" + account.getOverdraftLimit() + "\n" +
-                "Porcentaje Sobregiro: " + account.getOverdraftPercentage() + "%\n" +
                 "--------------------------------------------------";
     }
-
-
-
 }
