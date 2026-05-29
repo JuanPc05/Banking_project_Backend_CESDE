@@ -9,11 +9,11 @@ import java.util.List;
 
 public class CreditCard extends Account {
     private BigDecimal quota;
-    private double debt;
+    private BigDecimal debt;
     private int numberOfInstallments;
-    private double creditLimit;
+    private BigDecimal creditLimit;
 
-    public CreditCard(String accountNumber, BigDecimal balance, String accountType, BigDecimal quota, double debt, int numberOfInstallments, double creditLimit,int clientId) {
+    public CreditCard(String accountNumber, BigDecimal balance, String accountType, BigDecimal quota, BigDecimal debt, int numberOfInstallments, BigDecimal creditLimit,int clientId) {
         super(accountNumber, balance, accountType, clientId);
         this.quota = quota;
         this.debt = debt;
@@ -21,7 +21,7 @@ public class CreditCard extends Account {
         this.creditLimit = creditLimit;
     }
 
-    public CreditCard(String accountNumber, BigDecimal balance, LocalDate dateOpened, AccountState accountState, String accountType, List<Transaction> transactions, BigDecimal quota, double debt, int numberOfInstallments, double creditLimit,int clientId) {
+    public CreditCard(String accountNumber, BigDecimal balance, LocalDate dateOpened, AccountState accountState, String accountType, List<Transaction> transactions, BigDecimal quota, BigDecimal debt, int numberOfInstallments, BigDecimal creditLimit,int clientId) {
         super(accountNumber, balance, dateOpened, accountState, accountType, transactions, clientId);
         this.quota = quota;
         this.debt = debt;
@@ -36,8 +36,8 @@ public class CreditCard extends Account {
 
         this.quota = quota;
 
-        this.creditLimit = creditLimit.doubleValue();
-        this.debt = 0.0; // La deuda inicializa en 0
+        this.creditLimit = creditLimit;
+        this.debt = BigDecimal.ZERO; // La deuda inicializa en 0
         this.numberOfInstallments = 0;
     }
 
@@ -53,11 +53,11 @@ public class CreditCard extends Account {
         this.quota = quota;
     }
 
-    public double getDebt() {
+    public BigDecimal getDebt() {
         return debt;
     }
 
-    public void setDebt(double debt) {
+    public void setDebt(BigDecimal debt) {
         this.debt = debt;
     }
 
@@ -69,11 +69,11 @@ public class CreditCard extends Account {
         this.numberOfInstallments = numberOfInstallments;
     }
 
-    public double getCreditLimit() {
+    public BigDecimal getCreditLimit() {
         return creditLimit;
     }
 
-    public void setCreditLimit(double creditLimit) {
+    public void setCreditLimit(BigDecimal creditLimit) {
         this.creditLimit = creditLimit;
     }
 

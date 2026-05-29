@@ -5,6 +5,7 @@ import bank.application.inputs.CreditCardService;
 import bank.domain.PurchaseResult;
 import bank.application.ports.CreditCardRepositoryPort;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 public class CreditCardServiceImpl implements CreditCardService {
@@ -24,32 +25,52 @@ public class CreditCardServiceImpl implements CreditCardService {
         return creditCardRepositoryPort.findByCardNumber(cardNumber);
     }
 
+    // ✅ MÉTODO PUENTE AÑADIDO: Permite a la vista buscar la tarjeta automáticamente usando el ID de sesión
+    @Override
+    public CreditCard getCardByClientId(int clientId) {
+        return creditCardRepositoryPort.findByClientId(clientId);
+    }
+
     @Override
     public List<CreditCard> getAllCards() {
         return creditCardRepositoryPort.findAll();
     }
 
     @Override
-    public PurchaseResult purchaseCreditCard(String cardNumber, double amount, int installments) {
+    public PurchaseResult purchaseCreditCard(String cardNumber, BigDecimal amount, int installments) {
         CreditCard card = creditCardRepositoryPort.findByCardNumber(cardNumber);
         if (card == null) {
             throw new IllegalArgumentException("Tarjeta no encontrada.");
         }
-        double nuevaDeuda = card.getDebt() + amount;
 
-        if (java.math.BigDecimal.valueOf(nuevaDeuda).compareTo(card.getQuota()) > 0 || amount > card.getCreditLimit()) {
+        // 1. Sumamos directamente de objeto a objeto: card.getDebt() + amount
+        BigDecimal nuevaDeuda = card.getDebt().add(amount);
+
+        // 2. Validamos los límites financieros usando .compareTo()
+        if (nuevaDeuda.compareTo(card.getQuota()) > 0 || amount.compareTo(card.getCreditLimit()) > 0) {
             throw new IllegalArgumentException("Cupo insuficiente o supera el límite de crédito.");
         }
 
+        // 3. Cálculos de tasas y cuotas mensuales
+        double amountDouble = amount.doubleValue();
         double rate = getRateByInstallments(installments);
-        double cuota = calculateMonthlyInstallment(amount, rate, installments);
+        double cuota = calculateMonthlyInstallment(amountDouble, rate, installments);
         double totalConInteres = cuota * installments;
 
-        card.setDebt(card.getDebt() + amount);
+        // 4. Guardamos el estado actualizado en el Dominio y Base de Datos
+        card.setDebt(nuevaDeuda);
         card.setNumberOfInstallments(installments);
         creditCardRepositoryPort.updateCreditCard(card);
 
-        return new PurchaseResult(amount, installments, rate, cuota, totalConInteres, card.getDebt());
+        // 5. Retornamos el DTO de resultado
+        return new PurchaseResult(
+                amountDouble,
+                installments,
+                rate,
+                cuota,
+                totalConInteres,
+                nuevaDeuda.doubleValue()
+        );
     }
 
     private double getRateByInstallments(int installments) {
@@ -75,40 +96,33 @@ public class CreditCardServiceImpl implements CreditCardService {
         return numerator / denominator;
     }
 
-
     @Override
-    public void pay(String cardNumber, double amount) {
+    public void pay(String cardNumber, BigDecimal amount) {
         CreditCard card = creditCardRepositoryPort.findByCardNumber(cardNumber);
         if (card == null) {
             throw new IllegalArgumentException("Tarjeta no encontrada.");
         }
 
-        if (amount <= 0) {
+        // 1. El monto a pagar debe ser mayor que cero
+        if (amount.compareTo(BigDecimal.ZERO) <= 0) {
             throw new IllegalArgumentException("El monto a pagar debe ser mayor que cero.");
         }
 
-        if (amount > card.getDebt()) {
+        // 2. El monto no debe exceder la deuda actual
+        if (amount.compareTo(card.getDebt()) > 0) {
             throw new IllegalArgumentException("El monto excede la deuda actual.");
         }
 
-        // Reducir la deuda
-        card.setDebt(card.getDebt() - amount);
+        // 3. Reducir la deuda restando con .subtract()
+        BigDecimal nuevaDeuda = card.getDebt().subtract(amount);
+        card.setDebt(nuevaDeuda);
 
-        // Si la deuda queda en cero, reiniciamos cuotas
-        if (card.getDebt() == 0) {
+        // 4. Si la deuda queda en cero, reiniciamos las cuotas a pagar
+        if (nuevaDeuda.compareTo(BigDecimal.ZERO) == 0) {
             card.setNumberOfInstallments(0);
         }
 
         creditCardRepositoryPort.updateCreditCard(card);
-
         System.out.println("✅ Pago realizado correctamente. Deuda actual: $" + card.getDebt());
     }
-
-
-
-
-
-
 }
-
-

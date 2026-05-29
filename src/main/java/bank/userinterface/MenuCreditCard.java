@@ -10,6 +10,10 @@ public class MenuCreditCard {
         this.creditCardView = creditCardView;
     }
 
+    public void setLoggedInClientId(int clientId) {
+        this.creditCardView.setLoggedInClientId(clientId);
+    }
+
     public void showMenu() {
         int option;
         do {
@@ -32,4 +36,6 @@ public class MenuCreditCard {
             }
         } while (option != 0);
     }
+
+
 }

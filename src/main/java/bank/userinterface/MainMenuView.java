@@ -1,5 +1,6 @@
 package bank.userinterface;
 
+import bank.application.inputs.IClientManagement;
 import bank.domain.Client;
 import bank.application.inputs.CheckingAccountService;
 import bank.application.CreditCardServiceImpl;
@@ -12,17 +13,20 @@ public class MainMenuView {
     private final CheckingAccountView checkingAccountView;
     private final MenuSavingsAccount menuSavingsAccount;
     private final MenuCreditCard menuCreditCard;
+    private Client loggedInClient;
 
     public MainMenuView(CheckingAccountService checkingService,
                         SavingsAccountView savingsAccountView,
-                        CreditCardServiceImpl creditCardService) {
-        this.checkingAccountView = new CheckingAccountView(checkingService);
+                        CreditCardServiceImpl creditCardService,
+                        IClientManagement clientService ) {
+        this.checkingAccountView = new CheckingAccountView(checkingService, clientService );
         this.menuSavingsAccount = new MenuSavingsAccount(savingsAccountView);
         CreditCardView creditCardView = new CreditCardView(creditCardService);
         this.menuCreditCard = new MenuCreditCard(creditCardView);
     }
 
     public void showMenu(Client loggedInClient) {
+        this.checkingAccountView.setLoggedInClientId(loggedInClient.getId());
         int option;
         do {
             System.out.println("\n=== MENÚ PRINCIPAL HAPIBANK ===");
@@ -37,7 +41,13 @@ public class MainMenuView {
             switch (option) {
                 case 1 -> checkingAccountView.showMenu();
                 case 2 -> menuSavingsAccount.showMenu();
-                case 3 -> menuCreditCard.showMenu();
+                case 3 -> { this.menuCreditCard.setLoggedInClientId(loggedInClient.getId());
+                    this.menuCreditCard.showMenu();
+
+                }
+
+
+
                 case 0 -> System.out.println("Cerrando sesión de " + loggedInClient.getUserName() + "... ¡Hasta pronto!");
                 default -> System.out.println("⚠️ Opción inválida.");
             }
