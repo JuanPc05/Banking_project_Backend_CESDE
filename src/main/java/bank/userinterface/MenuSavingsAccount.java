@@ -5,12 +5,20 @@ import bank.infrastructure.in.view.adapter.SavingsAccountView;
 
 public class MenuSavingsAccount {
     private final SavingsAccountView savingsAccountView;
+    private int currentClientId;
 
     public MenuSavingsAccount(SavingsAccountView savingsAccountView) {
         this.savingsAccountView = savingsAccountView;
     }
 
+
+    public void setCurrentClientId(int currentClientId) {
+        this.currentClientId = currentClientId;
+    }
+
+
     public void showMenu() {
+        this.savingsAccountView.setCurrentClientId(this.currentClientId);
         int option;
         do {
             System.out.println("\n--- MENÚ CUENTA DE AHORROS ---");

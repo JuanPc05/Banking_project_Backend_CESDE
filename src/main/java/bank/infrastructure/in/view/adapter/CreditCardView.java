@@ -93,4 +93,24 @@ public class CreditCardView {
             cards.forEach(System.out::println);
         }
     }
+
+    public void pay() {
+        CreditCard card = creditCardService.getCardByClientId(this.currentClientId);
+        if (card == null) {
+            System.out.println("⚠️ No tienes tarjeta para realizar pagos.");
+            return;
+        }
+
+        System.out.println("💳 Deuda actual: $" + card.getDebt());
+        double amountDouble = FormValidationUtil.validateDouble("Ingrese el monto a abonar: ");
+        BigDecimal amount = BigDecimal.valueOf(amountDouble);
+
+        try {
+            creditCardService.pay(card.getAccountNumber(), amount);
+            // El éxito se imprime desde el servicio, pero aquí podemos dar feedback extra
+            System.out.println("✅ Pago procesado exitosamente.");
+        } catch (IllegalArgumentException e) {
+            System.out.println("⚠️ " + e.getMessage());
+        }
+    }
 }

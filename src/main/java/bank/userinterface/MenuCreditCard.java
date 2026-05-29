@@ -22,6 +22,7 @@ public class MenuCreditCard {
             System.out.println("2. Consultar tarjeta");
             System.out.println("3. Ver todas las tarjetas");
             System.out.println("4. Realizar compra");
+            System.out.println("5. Abonar a la deuda");
             System.out.println("0. Volver al menú principal");
 
             option = FormValidationUtil.validateInt("Seleccione una opción: ");
@@ -31,6 +32,7 @@ public class MenuCreditCard {
                 case 2 -> creditCardView.getCard();
                 case 3 -> creditCardView.getAllCards();
                 case 4 -> creditCardView.purchase();
+                case 5 -> creditCardView.pay();
                 case 0 -> System.out.println("Volviendo al menú principal...");
                 default -> System.out.println("⚠️ Opción inválida.");
             }

@@ -14,39 +14,45 @@ import java.util.List;
 import java.util.Optional;
 
 public class CheckingAccountServiceImpl implements CheckingAccountService {
-    private final ICheckingAccountRepository repository;
+    private final ICheckingAccountRepository checkingAccountRepository;
     private final ITransactionRepository transactionRepository;
     private final ISavingsAccountRepository savingsRepository;
 
-    public CheckingAccountServiceImpl(ICheckingAccountRepository repository , ITransactionRepository transactionRepository , ISavingsAccountRepository savingsRepository) {
-        this.repository = repository;
+    public CheckingAccountServiceImpl(ICheckingAccountRepository checkingAccountRepository, ITransactionRepository transactionRepository , ISavingsAccountRepository savingsRepository) {
+        this.checkingAccountRepository = checkingAccountRepository;
         this.transactionRepository = transactionRepository;
         this.savingsRepository = savingsRepository;
     }
 
-    @Override
-    public CheckingAccount getAccountByClientId(int clientId) {
-        return repository.findByClientId(clientId);
-    }
+
 
     @Override
     public void createAccount(CheckingAccount account) {
-        repository.save(account);
+        checkingAccountRepository.save(account);
     }
 
     @Override
     public CheckingAccount getAccount(String accountNumber) {
-        return repository.findByAccountNumber(accountNumber);
+        return checkingAccountRepository.findByAccountNumber(accountNumber);
     }
 
     @Override
-    public List<CheckingAccount> getAllAccounts() {
-        return repository.findAll();
+    public List<CheckingAccount> getAllAccounts(int clientId) {
+        return checkingAccountRepository.findByClientId(clientId);
+    }
+
+
+
+    @Override
+    public CheckingAccount getAccountByClientId(int clientId) {
+        List<CheckingAccount> accounts = checkingAccountRepository.findByClientId(clientId);
+        // Si la lista no está vacía, devuelve la primera cuenta, si no, devuelve null
+        return accounts.isEmpty() ? null : accounts.get(0);
     }
 
     @Override
     public void deposit(String accountNumber, BigDecimal amount) {
-        CheckingAccount account = repository.findByAccountNumber(accountNumber);
+        CheckingAccount account =checkingAccountRepository.findByAccountNumber(accountNumber);
 
 
         if (account == null) {
@@ -70,13 +76,13 @@ public class CheckingAccountServiceImpl implements CheckingAccountService {
                 "Depósito realizado desde ventanilla/servicio"
         );
         transactionRepository.save(depositRecord);
-        repository.update(account);
+        checkingAccountRepository.update(account);
         System.out.println("\n✅ Depósito exitoso. Nuevo saldo: $" + account.getBalance());
     }
 
     @Override
     public int getClientIdByAccountNumber(String accountNumber) {
-        CheckingAccount checking = repository.findByAccountNumber(accountNumber);
+        CheckingAccount checking = checkingAccountRepository.findByAccountNumber(accountNumber);
         if (checking != null) return checking.getClientId();
 
         var savings = savingsRepository.findById(accountNumber);
@@ -86,8 +92,14 @@ public class CheckingAccountServiceImpl implements CheckingAccountService {
     }
 
     @Override
+    public CheckingAccount findByAccountNumber(String accountNumber) {
+        // Tu repositorio ya sabe hacer esta consulta en la base de datos
+        return checkingAccountRepository.findByAccountNumber(accountNumber);
+    }
+
+    @Override
     public void withdraw(String accountNumber, BigDecimal amount) {
-        CheckingAccount account = repository.findByAccountNumber(accountNumber);
+        CheckingAccount account = checkingAccountRepository.findByAccountNumber(accountNumber);
         if (account == null) {
             System.out.println("⚠️ Error: La cuenta " + accountNumber + " no existe.");
             return;
@@ -115,7 +127,7 @@ public class CheckingAccountServiceImpl implements CheckingAccountService {
             transactionRepository.save(withdrawalRecord);
 
             // 3. Finalmente, guardamos el nuevo saldo en la tabla de cuentas
-            repository.update(account);
+            checkingAccountRepository.update(account);
 
             System.out.println("\n✅ Retiro exitoso. Nuevo saldo: $" + account.getBalance());
         } else {
@@ -124,7 +136,7 @@ public class CheckingAccountServiceImpl implements CheckingAccountService {
     }
     @Override
     public List<Transaction> getTransactionsByAccount(String accountNumber) {
-        CheckingAccount account = repository.findByAccountNumber(accountNumber);
+        CheckingAccount account = checkingAccountRepository.findByAccountNumber(accountNumber);
         if (account == null) {
             System.out.println("⚠️ La cuenta corriente no existe.");
             return new ArrayList<>();
@@ -134,7 +146,7 @@ public class CheckingAccountServiceImpl implements CheckingAccountService {
 
     @Override
     public void transfer(String fromAccount, String toAccount, BigDecimal amount) {
-        CheckingAccount origin = repository.findByAccountNumber(fromAccount);
+        CheckingAccount origin = checkingAccountRepository.findByAccountNumber(fromAccount);
         if (origin == null) {
             System.out.println("⚠️ Error: La cuenta corriente origen no existe.");
             return;
@@ -151,7 +163,7 @@ public class CheckingAccountServiceImpl implements CheckingAccountService {
         }
 
         // Búsqueda cruzada en ambas tablas
-        CheckingAccount destChecking = repository.findByAccountNumber(toAccount);
+        CheckingAccount destChecking = checkingAccountRepository.findByAccountNumber(toAccount);
         Optional<SavingsAccount> destSavingsOpt = savingsRepository.findById(toAccount);
 
         if (destChecking != null) {
@@ -159,8 +171,8 @@ public class CheckingAccountServiceImpl implements CheckingAccountService {
             origin.setBalance(origin.getBalance().subtract(amount));
             destChecking.setBalance(destChecking.getBalance().add(amount));
 
-            repository.update(origin);
-            repository.update(destChecking);
+            checkingAccountRepository.update(origin);
+            checkingAccountRepository.update(destChecking);
             System.out.println("\n💸 ¡Transferencia exitosa de Corriente a Corriente!");
 
         } else if (destSavingsOpt.isPresent()) {
@@ -170,7 +182,7 @@ public class CheckingAccountServiceImpl implements CheckingAccountService {
             origin.setBalance(origin.getBalance().subtract(amount));
             destSavings.setBalance(destSavings.getBalance().add(amount));
 
-            repository.update(origin);            // Guarda en la tabla de corrientes
+            checkingAccountRepository.update(origin);            // Guarda en la tabla de corrientes
             savingsRepository.update(destSavings); // Guarda en la tabla de ahorros
             System.out.println("\n💸 ¡Transferencia interbancaria exitosa (Corriente -> Ahorros)!");
 
@@ -202,4 +214,9 @@ public class CheckingAccountServiceImpl implements CheckingAccountService {
 
 
     }
+    @Override
+    public List<CheckingAccount> findByClientId(int clientId) {
+
+        return checkingAccountRepository.findByClientId(clientId);
     }
+}

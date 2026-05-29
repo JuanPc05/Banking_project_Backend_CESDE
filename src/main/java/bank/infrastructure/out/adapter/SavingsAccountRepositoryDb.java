@@ -20,8 +20,28 @@ public class SavingsAccountRepositoryDb  implements ISavingsAccountRepository {
     }
 
     @Override
+    public List<SavingsAccount> findByClientId(int clientId) {
+        // Filtramos estrictamente para traer SOLO las cuentas de ahorro de este cliente
+        String sql = "SELECT * FROM accounts WHERE client_id = ? AND account_type = 'Cuenta de Ahorros'";
+        List<SavingsAccount> accounts = new ArrayList<>();
+
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setInt(1, clientId);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    accounts.add(rowMapper.mapRow(rs));
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new RuntimeException("Error al buscar cuentas de ahorro del cliente: " + clientId, e);
+        }
+        return accounts;
+    }
+
+    @Override
     public void save(SavingsAccount savingsAccount) {
-        // Usamos 'account' (singular) y el tipo 'Cuenta de Ahorros'
         String sql = "INSERT INTO accounts (account_number, client_id, balance, date_opened, account_state, account_type, interest_rate) " +
                 "VALUES (?, ?, ?, ?, ?, 'Cuenta de Ahorros', ?)";
 
@@ -30,15 +50,17 @@ public class SavingsAccountRepositoryDb  implements ISavingsAccountRepository {
             ps.setInt(2, savingsAccount.getClientId());
             ps.setBigDecimal(3, savingsAccount.getBalance());
             ps.setDate(4, Date.valueOf(savingsAccount.getDateOpened()));
-            ps.setString(5, savingsAccount.getAccountState().name());
-            ps.setDouble(6, savingsAccount.getInterestRate()); // Ajusta si tu variable se llama distinto
+            ps.setString(5, savingsAccount.getAccountState().name()); // 🛠️ Verifica si guarda "ACTIVE" o "ACTIVA"
+            ps.setDouble(6, savingsAccount.getInterestRate());
 
             ps.executeUpdate();
             System.out.println("💾 ¡Cuenta de Ahorros guardada en la base de datos!");
         } catch (SQLException e) {
-            throw new RuntimeException("Error al guardar la cuenta de ahorros", e);
+            // 🌟 ESTA LÍNEA ES CLAVE: Te dirá exactamente qué columna o dato falló en MySQL
+            e.printStackTrace();
+            throw new RuntimeException("Error al guardar la cuenta de ahorros: " + e.getMessage(), e);
         }
-    } // <--- ¡ESTA ES LA LLAVE QUE TE FALTABA!
+    }
 
     @Override
     public Optional<SavingsAccount> findById(String accountNumber) {
@@ -102,4 +124,27 @@ public class SavingsAccountRepositoryDb  implements ISavingsAccountRepository {
             throw new RuntimeException("Error al eliminar la cuenta de ahorros", e);
         }
     }
+
+
+    @Override
+    public SavingsAccount findByAccountNumber(String accountNumber) {
+        // Buscamos usando el plural 'accounts' y el discriminador 'Cuenta de Ahorros'
+        String sql = "SELECT * FROM accounts WHERE account_number = ? AND account_type = 'Cuenta de Ahorros'";
+
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setString(1, accountNumber);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    // Reutilizamos tu rowMapper inyectado en el constructor
+                    return rowMapper.mapRow(rs);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new RuntimeException("Error al buscar la cuenta de ahorros por número: " + accountNumber, e);
+        }
+        return null; // Retorna null si la cuenta no existe en la base de datos
+    }
+
 }

@@ -40,13 +40,17 @@ public class MainMenuView {
 
             switch (option) {
                 case 1 -> checkingAccountView.showMenu();
-                case 2 -> menuSavingsAccount.showMenu();
-                case 3 -> { this.menuCreditCard.setLoggedInClientId(loggedInClient.getId());
-                    this.menuCreditCard.showMenu();
 
+                // 🌟 CORREGIDO: Agregadas llaves { } porque ejecuta dos instrucciones consecutivas
+                case 2 -> {
+                    menuSavingsAccount.setCurrentClientId(loggedInClient.getId());
+                    menuSavingsAccount.showMenu();
                 }
 
-
+                case 3 -> {
+                    this.menuCreditCard.setLoggedInClientId(loggedInClient.getId());
+                    this.menuCreditCard.showMenu();
+                }
 
                 case 0 -> System.out.println("Cerrando sesión de " + loggedInClient.getUserName() + "... ¡Hasta pronto!");
                 default -> System.out.println("⚠️ Opción inválida.");

@@ -97,7 +97,7 @@ public class CreditCardRepositoryDb implements CreditCardRepositoryPort {
     @Override
     public void updateCreditCard(CreditCard card) {
         // Actualiza la deuda acumulada y las cuotas tras compras o abonos
-        String sql = "UPDATE accounts1" +
+        String sql = "UPDATE accounts" +
                 " SET debt = ?, number_of_installments = ? " +
                 "WHERE account_number = ? AND account_type = 'CREDIT_CARD'";
 
