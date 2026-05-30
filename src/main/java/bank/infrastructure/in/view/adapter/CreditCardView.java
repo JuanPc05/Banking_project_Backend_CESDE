@@ -38,19 +38,19 @@ public class CreditCardView {
         BigDecimal limit = BigDecimal.valueOf(limitDouble);
 
         // Generamos un número de tarjeta aleatorio (ejemplo simple)
-        String cardNumber = "4" + (long)(Math.random() * 1000000000000000L);
+        String cardNumber = "4" + (long)(Math.random() * 100000L);
 
         // Creamos la entidad
         CreditCard card = new CreditCard(cardNumber, quota, limit, this.currentClientId);
-        creditCardService.createCreditCard(card);
-
 
         try {
             creditCardService.createCreditCard(card);
             System.out.println("✅ Tarjeta creada con éxito. Número: " + cardNumber);
+        } catch (IllegalArgumentException e) {
+            // Capturamos específicamente la regla de negocio que agregamos en el Service
+            System.out.println("⚠️ " + e.getMessage());
         } catch (Exception e) {
-            System.err.println("⚠️ Error al guardar la tarjeta en la base de datos: " + e.getMessage());
-            e.printStackTrace();
+            System.err.println("⚠️ Error crítico al guardar la tarjeta: " + e.getMessage());
         }
     }
 
