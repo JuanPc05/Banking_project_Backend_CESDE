@@ -15,27 +15,28 @@ public class CreditCardRepositoryDb implements CreditCardRepositoryPort {
 
     @Override
     public void saveCreditCard(CreditCard card) {
-        // SQL basado exactamente en las columnas de tu tabla relacional 'account'
         String sql = "INSERT INTO accounts (account_number, balance, date_opened, account_state, account_type, client_id, quota, debt, number_of_installments, credit_limit) " +
                 "VALUES (?, ?, ?, ?, 'CREDIT_CARD', ?, ?, ?, ?, ?)";
 
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setString(1, card.getAccountNumber());
-            ps.setBigDecimal(2, java.math.BigDecimal.ZERO);                 // Saldo balance inicial en 0.00
-            ps.setDate(3, Date.valueOf(java.time.LocalDate.now()));         // Fecha de apertura (Hoy)
-            ps.setString(4, "ACTIVE");                                      // Estado inicial de la tarjeta
+            ps.setBigDecimal(2, java.math.BigDecimal.ZERO);
+            ps.setDate(3, Date.valueOf(java.time.LocalDate.now()));
+            ps.setString(4, "ACTIVE");
             ps.setInt(5, card.getClientId());
-
-            // ✅ FLUJO PURO: Al ser todo BigDecimal, se inyecta de forma nativa a PreparedStatement
             ps.setBigDecimal(6, card.getQuota());
-            ps.setBigDecimal(7, card.getDebt());                            // Deuda inicial (0.00)
+            ps.setBigDecimal(7, card.getDebt());
             ps.setInt(8, card.getNumberOfInstallments());
-            ps.setBigDecimal(9, card.getCreditLimit());                     // Límite de compra asignado
+            ps.setBigDecimal(9, card.getCreditLimit());
 
             ps.executeUpdate();
-            System.out.println("💾 [SQL] Tarjeta de crédito asignada y guardada exitosamente en la Base de Datos.");
+            System.out.println("💾 [SQL] Tarjeta de crédito guardada exitosamente.");
+
+        } catch (SQLIntegrityConstraintViolationException e) {
+            // Interceptamos la violación de MySQL específicamente
+            throw new IllegalArgumentException("Violación de integridad: La tarjeta " + card.getAccountNumber() + " ya existe en el sistema.");
         } catch (SQLException e) {
-            throw new RuntimeException("Error al insertar la tarjeta de crédito en la BD: " + e.getMessage(), e);
+            throw new RuntimeException("Error interno de base de datos al guardar la tarjeta.", e);
         }
     }
 
